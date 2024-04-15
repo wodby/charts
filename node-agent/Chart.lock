@@ -1,0 +1,6 @@
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 0.1.0
+digest: sha256:24685e182c68e4874bfd906625a800283dd3ca73dd7c269f91bcdf7fc54431d0
+generated: "2024-04-12T14:20:51.402084+03:00"
