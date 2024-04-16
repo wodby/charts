@@ -40,7 +40,7 @@ spec:
           - node-agent
           {{- with .Values.envVars }}
           env:
-            {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
           {{- end }}
           ports:
             - containerPort: {{ .Values.service.port }}
