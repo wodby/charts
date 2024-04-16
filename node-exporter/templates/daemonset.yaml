@@ -54,6 +54,16 @@ spec:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: rootfs
+            mountPath: /host/root
+            readOnly: true
+          - name: sysfs
+            mountPath: /host/sys
+            readOnly: true
+          - name: procfs
+            mountPath: /host/proc
+            readOnly: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
