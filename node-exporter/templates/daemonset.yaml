@@ -36,13 +36,11 @@ spec:
           args:
           - node-exporter
           env:
-          - name: HOSTNAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          {{- if .Values.envVars }}
-          {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
-          {{- end }}
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- toYaml .Values.envVars | nindent 12 }}
           ports:
             - name: http-metrics
               containerPort: {{ .Values.service.port }}

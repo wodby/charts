@@ -39,7 +39,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- with .Values.envVars }}
           env:
-            {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
+            {{- toYaml .Values.envVars | nindent 12 }}
           {{- end }}
           ports:
             - name: fpm

@@ -97,9 +97,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          {{- if .Values.envVars }}
-          {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
-          {{- end }}
+            {{- toYaml .Values.envVars | nindent 12 }}
           volumeMounts:
             - name: data
               mountPath: /export

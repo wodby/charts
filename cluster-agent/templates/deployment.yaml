@@ -38,9 +38,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
           - node-agent
-          {{- with .Values.envVars }}
+          {{- if .Values.envVars }}
           env:
-          {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
+            {{- toYaml .Values.envVars | nindent 12 }}
           {{- end }}
           ports:
             - containerPort: {{ .Values.service.port }}
