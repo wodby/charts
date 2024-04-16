@@ -3,6 +3,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "php-fpm.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "php-fpm.labels" . | nindent 4 }}
 spec:

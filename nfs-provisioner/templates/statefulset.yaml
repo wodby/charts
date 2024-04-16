@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "nfs-provisioner.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ include "nfs-provisioner.name" . }}
     chart: {{ include "nfs-provisioner.chart" . }}

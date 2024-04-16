@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ include "node-agent.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "node-agent.labels" . | nindent 4 }}
 spec:
