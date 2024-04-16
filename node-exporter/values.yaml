@@ -8,7 +8,7 @@ image:
   repository: wodby/monitoring-agent
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0-rc.7"
+  tag: "0.1.0-rc.8"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -33,16 +33,9 @@ podSecurityContext: {}
 
 securityContext:
   runAsUser: 0
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-service:
-  type: ClusterIP
-  port: 80
+  privileged: true
+  capabilities:
+    add: [ "SYS_TIME" ]
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
