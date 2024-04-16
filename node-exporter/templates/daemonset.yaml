@@ -40,7 +40,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            {{- with .Values.envVars }}
             {{- toYaml .Values.envVars | nindent 12 }}
+            {{- end }}
           ports:
             - name: http-metrics
               containerPort: {{ .Values.service.port }}
