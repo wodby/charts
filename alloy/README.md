@@ -3,7 +3,7 @@
 Fork of https://github.com/grafana/alloy/tree/main/operations/helm/charts/alloy
 
 - new template: kubernetes-monitoring-telemetry, metrics-service-credentials
-- overridden default configMap content
+- always create overridden default configMap content
 - support for namespaces in controller
 - values:
   - disabled crds creation  
