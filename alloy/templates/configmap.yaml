@@ -1,4 +1,4 @@
-{{- if $values.configMap.create }}
+{{- if .Values.configMap.create }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
