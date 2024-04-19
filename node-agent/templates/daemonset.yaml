@@ -44,7 +44,7 @@ spec:
             {{- toYaml .Values.envVars | nindent 12 }}
           ports:
             - name: node-agent
-              containerPort: {{ .Values.service.port }}
+              containerPort: 80
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
