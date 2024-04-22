@@ -40,7 +40,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- with .Values.envVars }}
           env:
-            {{- toYaml .Values.envVars | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
             - name: fpm
