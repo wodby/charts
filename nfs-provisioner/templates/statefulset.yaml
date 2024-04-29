@@ -33,7 +33,7 @@ spec:
       {{- end }}
       containers:
         - name: nfs
-          image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .pullPolicy }}
           ports:
             - name: nfs
