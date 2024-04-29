@@ -2,3 +2,9 @@ apiVersion: v2
 appVersion: 4.0.8
 name: nfs-provisioner
 version: 0.1.2
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - bitnami-common
+  version: 2.x.x

@@ -1,4 +1,11 @@
 {{/*
+Return the proper NGINX image name
+*/}}
+{{- define "php-fpm.image" -}}
+    {{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "php-fpm.name" -}}
