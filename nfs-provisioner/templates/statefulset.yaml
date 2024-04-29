@@ -4,17 +4,13 @@ metadata:
   name: {{ include "nfs-provisioner.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ include "nfs-provisioner.name" . }}
-    chart: {{ include "nfs-provisioner.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "nfs-provisioner.labels" . | nindent 4 }}
 spec:
   # TODO: Investigate how/if nfs-provisioner can be scaled out beyond 1 replica
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "nfs-provisioner.name" . }}
-      release: {{ .Release.Name }}
+      {{- include "nfs-provisioner.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "nfs-provisioner.fullname" . }}
   template:
     metadata:
@@ -30,17 +26,15 @@ spec:
     spec:
       # NOTE: This is 10 seconds longer than the default nfs-provisioner --grace-period value of 90sec
       terminationGracePeriodSeconds: 100
-      serviceAccountName: {{ if .Values.rbac.create }}{{ include "nfs-provisioner.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName | quote }}{{ end }}
+      serviceAccountName: {{ include "nfs-provisioner.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          {{- with .Values.image }}
+        - name: nfs
           image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
           imagePullPolicy: {{ .pullPolicy }}
-          {{- end }}
           ports:
             - name: nfs
               containerPort: 2049
