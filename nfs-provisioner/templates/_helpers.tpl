@@ -60,3 +60,15 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "nfs-provisioner.provisionerName" -}}
+{{- if .Values.storageClass.provisionerName }}
+{{- printf .Values.storageClass.provisionerName }}
+{{- else -}}
+cluster.local/{{ include "nfs-provisioner.fullname" . }}
+{{- end }}
+{{- end }}
