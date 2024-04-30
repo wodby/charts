@@ -69,6 +69,6 @@ Create chart name and version as used by the chart label.
 {{- if .Values.storageClass.provisionerName }}
 {{- printf .Values.storageClass.provisionerName }}
 {{- else -}}
-cluster.local/{{ include "nfs-provisioner.fullname" . }}
+cluster.local/{{ .Release.Name }}
 {{- end }}
 {{- end }}

@@ -3,10 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app: {{ include "nfs-provisioner.name" . }}
-    chart: {{ include "nfs-provisioner.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "nfs-provisioner.labels" . | nindent 4 }}
   name: {{ include "nfs-provisioner.fullname" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io

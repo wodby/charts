@@ -87,7 +87,7 @@ storageClass:
 
   ## Set a StorageClass name
   ## Ignored if storageClass.create is false
-  name: nfs
+  name: ""
 
   # set to null to prevent expansion
   allowVolumeExpansion: true

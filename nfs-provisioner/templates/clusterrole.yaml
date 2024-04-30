@@ -4,10 +4,7 @@ kind: ClusterRole
 metadata:
   name: {{ include "nfs-provisioner.fullname" . }}
   labels:
-    app: {{ include "nfs-provisioner.name" . }}
-    chart: {{ include "nfs-provisioner.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "nfs-provisioner.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
