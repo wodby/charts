@@ -137,7 +137,7 @@ spec:
     - metadata:
         name: data
         {{- $claimLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.persistence.labels .Values.commonLabels ) "context" . ) }}
-        labels: {{- include "common.labels.render" ( dict "customLabels" $claimLabels "context" $ ) | nindent 10 }}
+        labels: {{- include "common.tplvalues.render" ( dict "customLabels" $claimLabels "context" $ ) | nindent 10 }}
       spec:
         accessModes: [ {{ .Values.persistence.accessMode | quote }} ]
         {{- if .Values.persistence.storageClass }}
