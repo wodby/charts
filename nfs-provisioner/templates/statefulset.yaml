@@ -7,7 +7,7 @@ metadata:
     {{- include "nfs-provisioner.labels" . | nindent 4 }}
 spec:
   # TODO: Investigate how/if nfs-provisioner can be scaled out beyond 1 replica
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "nfs-provisioner.selectorLabels" . | nindent 6 }}

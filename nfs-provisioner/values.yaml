@@ -98,7 +98,7 @@ storageClass:
   parameters: {}
 
   mountOptions:
-    - vers=4.1
+    - vers=3
     - retrans=2
     - timeo=30
 

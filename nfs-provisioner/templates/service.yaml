@@ -99,6 +99,5 @@ spec:
   externalIPs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  selector:
-    app: {{ include "nfs-provisioner.name" . }}
-    release: {{ .Release.Name }}
+  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
+  selector: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 4 }}
