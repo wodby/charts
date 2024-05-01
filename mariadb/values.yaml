@@ -408,7 +408,7 @@ primary:
   ## @param primary.livenessProbe.successThreshold Success threshold for livenessProbe
   ##
   livenessProbe:
-    enabled: true
+    enabled: false
     initialDelaySeconds: 120
     periodSeconds: 10
     timeoutSeconds: 1
@@ -421,13 +421,7 @@ primary:
   ## @param primary.readinessProbe.failureThreshold Failure threshold for readinessProbe
   ## @param primary.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
-  readinessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
+
   ## @param primary.customStartupProbe Override default startup probe for MariaDB primary containers
   ##
   customStartupProbe: {}
@@ -436,7 +430,17 @@ primary:
   customLivenessProbe: {}
   ## @param primary.customReadinessProbe Override default readiness probe for MariaDB primary containers
   ##
-  customReadinessProbe: {}
+  customReadinessProbe:
+    exec:
+      command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
+    initialDelaySeconds: 20
+    failureThreshold: 3
+    timeoutSeconds: 3
+    periodSeconds: 5
   ## @param primary.startupWaitOptions Override default builtin startup wait check options for MariaDB primary containers
   ## `bitnami/mariadb` Docker image has built-in startup check mechanism,
   ## which periodically checks if MariaDB service has started up and stops it
@@ -1241,12 +1245,16 @@ metrics:
   ## @param metrics.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 1
-    successThreshold: 1
-    failureThreshold: 3
+    exec:
+      command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
+    initialDelaySeconds: 5
+    failureThreshold: 2
+    timeoutSeconds: 3
+    periodSeconds: 5
   ## Prometheus Service Monitor
   ## ref: https://github.com/coreos/prometheus-operator
   ##

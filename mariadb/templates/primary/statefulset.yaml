@@ -100,7 +100,7 @@ spec:
           {{- end }}
           env:
             - name: WODBY
-              value: 1
+              value: '1'
             {{- if eq .Values.architecture "replication" }}
             - name: MARIADB_REPLICATION_MODE
               value: "master"
