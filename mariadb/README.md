@@ -7,3 +7,4 @@ Fork of https://github.com/bitnami/charts/blob/main/bitnami/mariadb
 - changed volumes
 - disable securityContext
 - custom readiness probe
+- disabled network policy

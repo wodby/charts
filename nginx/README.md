@@ -10,3 +10,4 @@ Fork of https://github.com/bitnami/charts/blob/main/bitnami/nginx/README.md
 - HTTPS port removed
 - disable securityContext
 - custom readiness probe
+- disabled network policy
