@@ -37,6 +37,9 @@ podLabels: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
+containerPorts:
+  fpm: 9000
+
 securityContext:
   capabilities:
     add:
@@ -49,7 +52,6 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 9000
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -46,9 +46,16 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
+            {{- if .Values.containerPorts.fpm }}
             - name: fpm
               containerPort: 9000
               protocol: TCP
+            {{- end }}
+            {{- if .Values.containerPorts.sshd }}
+            - name: sshd
+              containerPort: 22
+              protocol: TCP
+            {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
