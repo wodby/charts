@@ -68,6 +68,17 @@ command: []
 args: []
 
 livenessProbe: {}
+readinessProbe:
+  exec:
+    command:
+    - make
+    - check-ready
+    - -f
+    - /usr/local/bin/actions.mk
+  initialDelaySeconds: 5
+  failureThreshold: 2
+  timeoutSeconds: 3
+  periodSeconds: 5
 
 autoscaling:
   enabled: true
