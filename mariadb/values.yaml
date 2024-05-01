@@ -330,7 +330,7 @@ primary:
   ## @param primary.podSecurityContext.fsGroup Group ID for the mounted volumes' filesystem
   ##
   podSecurityContext:
-    enabled: true
+    enabled: false
     fsGroupChangePolicy: Always
     sysctls: []
     supplementalGroups: []
@@ -349,7 +349,7 @@ primary:
   ## @param primary.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
   ##
   containerSecurityContext:
-    enabled: true
+    enabled: false
     seLinuxOptions: {}
     runAsUser: 1001
     runAsGroup: 1001
@@ -753,7 +753,7 @@ secondary:
   ## @param secondary.podSecurityContext.fsGroup Group ID for the mounted volumes' filesystem
   ##
   podSecurityContext:
-    enabled: true
+    enabled: false
     fsGroupChangePolicy: Always
     sysctls: []
     supplementalGroups: []
@@ -772,7 +772,7 @@ secondary:
   ## @param secondary.containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
   ##
   containerSecurityContext:
-    enabled: true
+    enabled: false
     seLinuxOptions: {}
     runAsUser: 1001
     runAsGroup: 1001
