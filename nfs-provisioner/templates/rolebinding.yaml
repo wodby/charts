@@ -4,11 +4,11 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     {{- include "nfs-provisioner.labels" . | nindent 4 }}
-  name: {{ include "nfs-provisioner.fullname" . }}
+  name: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "nfs-provisioner.fullname" . }}
+  name: {{ .Release.Name }}
 subjects:
   - kind: ServiceAccount
     name: {{ include "nfs-provisioner.fullname" . }}
