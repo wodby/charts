@@ -32,9 +32,9 @@ spec:
         checksum/server-block-configuration: {{ include (print $.Template.BasePath "/server-block-configmap.yaml") . | sha256sum }}
         {{- end }}
     spec:
-      {{- include "nginx.imagePullSecrets" . | nindent 6 }}
+      {{- include "varnish.imagePullSecrets" . | nindent 6 }}
       shareProcessNamespace: {{ .Values.sidecarSingleProcessNamespace }}
-      serviceAccountName: {{ template "nginx.serviceAccountName" . }}
+      serviceAccountName: {{ template "varnish.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       {{- if .Values.hostAliases }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
@@ -73,7 +73,7 @@ spec:
       {{- if or .Values.cloneStaticSiteFromGit.enabled .Values.initContainers }}
         {{- if .Values.cloneStaticSiteFromGit.enabled }}
         - name: git-clone-repository
-          image: {{ include "nginx.cloneStaticSiteFromGit.image" . }}
+          image: {{ include "varnish.cloneStaticSiteFromGit.image" . }}
           imagePullPolicy: {{ .Values.cloneStaticSiteFromGit.image.pullPolicy | quote }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
@@ -123,7 +123,7 @@ spec:
       containers:
         {{- if .Values.cloneStaticSiteFromGit.enabled }}
         - name: git-repo-syncer
-          image: {{ include "nginx.cloneStaticSiteFromGit.image" . }}
+          image: {{ include "varnish.cloneStaticSiteFromGit.image" . }}
           imagePullPolicy: {{ .Values.cloneStaticSiteFromGit.image.pullPolicy | quote }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
@@ -173,8 +173,8 @@ spec:
                 name: {{ include "common.tplvalues.render" (dict "value" .Values.cloneStaticSiteFromGit.extraEnvVarsSecret "context" $) }}
           {{- end }}
         {{- end }}
-        - name: nginx
-          image: {{ include "nginx.image" . }}
+        - name: varnish
+          image: {{ include "varnish.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
@@ -194,11 +194,11 @@ spec:
           {{- end }}
           env:
             {{- if .Values.containerPorts.http }}
-            - name: NGINX_HTTP_PORT_NUMBER
+            - name: VARNISH_HTTP_PORT_NUMBER
               value: {{ .Values.containerPorts.http | quote }}
             {{- end }}
             {{- if .Values.containerPorts.https }}
-            - name: NGINX_HTTPS_PORT_NUMBER
+            - name: VARNISH_HTTPS_PORT_NUMBER
               value: {{ .Values.containerPorts.https | quote }}
             {{- end }}
             {{- if .Values.extraEnvVars }}
@@ -246,32 +246,9 @@ spec:
           {{- else if ne .Values.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.resourcesPreset) | nindent 12 }}
           {{- end }}
-          volumeMounts:
-            - name: empty-dir
-              mountPath: /tmp
-              subPath: tmp-dir
-            {{- if or .Values.serverBlock .Values.existingServerBlockConfigmap }}
-            - name: nginx-server-block
-              mountPath: /opt/bitnami/nginx/conf/server_blocks
-            {{- end }}
-            {{- if (include "nginx.useStaticSite" .) }}
-            - name: staticsite
-              mountPath: /app
-            {{- end }}
-            {{- if .Values.tls.enabled }}
-            - name: certificate
-              mountPath: /certs
-            {{- else }}
-            - name: empty-dir
-              mountPath: /certs
-              subPath: app-tls-dir
-            {{- end }}
-            {{- if .Values.extraVolumeMounts }}
-            {{- include "common.tplvalues.render" ( dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
-            {{- end }}
         {{- if .Values.metrics.enabled }}
         - name: metrics
-          image: {{ include "nginx.metrics.image" . }}
+          image: {{ include "varnish.metrics.image" . }}
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
           {{- if .Values.metrics.securityContext.enabled }}
           securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metrics.securityContext "context" $) | nindent 12 }}
@@ -279,7 +256,7 @@ spec:
           command:
             - exporter
           args:
-            - --nginx.scrape-uri
+            - --varnish.scrape-uri
             - {{ printf "http://127.0.0.1:%d/status" (int (default .Values.containerPorts.http .Values.metrics.port)) | quote }}
             - --web.listen-address
             - {{ printf ":%d" (int .Values.metrics.containerPorts.metrics) | quote }}
@@ -309,33 +286,4 @@ spec:
         {{- end }}
         {{- if .Values.sidecars }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" $) | nindent 8 }}
-        {{- end }}
-      volumes:
-        - name: empty-dir
-          emptyDir: {}
-        {{- if .Values.tls.enabled }}
-        - name: certificate
-          secret:
-            {{- if .Values.tls.existingSecret }}
-            secretName: {{ .Values.tls.existingSecret }}
-            {{- else }}
-            secretName: {{ printf "%s-tls" (include "common.names.fullname" .) }}
-            items:
-              - key: tls.crt
-                path: server.crt
-              - key: tls.key
-                path: server.key
-            {{- end }}
-        {{- end }}
-        {{- if or .Values.serverBlock .Values.existingServerBlockConfigmap }}
-        - name: nginx-server-block
-          configMap:
-            name: {{ include "nginx.serverBlockConfigmapName" . }}
-        {{- end }}
-        {{- if (include "nginx.useStaticSite" .) }}
-        - name: staticsite
-          {{- include "nginx.staticSiteVolume" . | nindent 10 }}
-        {{- end }}
-        {{- if .Values.extraVolumes }}
-        {{- include "common.tplvalues.render" ( dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
         {{- end }}

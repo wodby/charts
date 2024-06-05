@@ -1,0 +1,15 @@
+# Copyright VMware, Inc.
+# SPDX-License-Identifier: APACHE-2.0
+
+annotations:
+  category: Infrastructure
+  licenses: Apache-2.0
+apiVersion: v2
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - bitnami-common
+  version: 2.x.x
+name: varnish
+version: 0.1.0

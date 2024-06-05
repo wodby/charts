@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opensmtpd.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "opensmtpd.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  {{- if .Values.containerPorts.fpm }}
+    - port: 9000
+      targetPort: fpm
+      protocol: TCP
+      name: fpm
+  {{- end }}
+  {{- if .Values.containerPorts.sshd }}
+    - port: 22
+      targetPort: sshd
+      protocol: TCP
+      name: sshd
+  {{- end }}
+  selector:
+    {{- include "opensmtpd.selectorLabels" . | nindent 4 }}
