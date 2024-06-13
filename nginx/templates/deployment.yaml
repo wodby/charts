@@ -226,20 +226,22 @@ spec:
             {{- include "common.tplvalues.render" (dict "value" .Values.extraContainerPorts "context" $) | nindent 12 }}
             {{- end }}
           {{- if not .Values.diagnosticMode.enabled }}
-          {{- if .Values.customLivenessProbe }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: {{ ternary "https" "http" (and (empty .Values.containerPorts.http) (not (empty .Values.containerPorts.https))) }}
-          {{- end }}
-          {{- if .Values.customReadinessProbe }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.readinessProbe.enabled }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.readinessProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: {{ ternary "https" "http" (and (empty .Values.containerPorts.http) (not (empty .Values.containerPorts.https))) }}
-          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /.healthz
+              port: 80
+            initialDelaySeconds: 80
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /.healthz
+              port: 80
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
           {{- end }}
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}

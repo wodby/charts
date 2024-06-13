@@ -27,18 +27,13 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
     spec:
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
       containers:
         - name: gotenberg
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
+              containerPort: 3000
           env:
           {{- range $name, $value := .Values.env.open }}
           {{- if not (empty $value) }}
@@ -46,18 +41,6 @@ spec:
               value: {{ $value | quote }}
           {{- end }}
           {{- end }}
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 60
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: 5
-            periodSeconds: 60
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

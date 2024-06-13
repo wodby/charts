@@ -150,36 +150,28 @@ spec:
                   fi
                   mysqladmin status -uroot -p"${password_aux}"
           {{- end }}
-          {{- if .Values.primary.customLivenessProbe }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.primary.customLivenessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.primary.livenessProbe.enabled }}
-          livenessProbe: {{- omit .Values.primary.livenessProbe "enabled" | toYaml | nindent 12 }}
+          livenessProbe:
             exec:
               command:
-                - /bin/bash
-                - -ec
-                - |
-                  password_aux="${MARIADB_ROOT_PASSWORD:-}"
-                  if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
-                      password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
-                  fi
-                  mysqladmin status -uroot -p"${password_aux}"
-          {{- end }}
-          {{- if .Values.primary.customReadinessProbe }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.primary.customReadinessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.primary.readinessProbe.enabled }}
-          readinessProbe: {{- omit .Values.primary.readinessProbe "enabled" | toYaml | nindent 12 }}
+              - make
+              - check-ready
+              - -f
+              - /usr/local/bin/actions.mk
+            initialDelaySeconds: 80
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
             exec:
               command:
-                - /bin/bash
-                - -ec
-                - |
-                  password_aux="${MARIADB_ROOT_PASSWORD:-}"
-                  if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
-                      password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
-                  fi
-                  mysqladmin status -uroot -p"${password_aux}"
-          {{- end }}
+              - make
+              - check-ready
+              - -f
+              - /usr/local/bin/actions.mk
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
           {{- end }}
           {{- if .Values.primary.resources }}
           resources: {{ toYaml .Values.primary.resources | nindent 12 }}

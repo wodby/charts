@@ -96,14 +96,6 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            - name: empty-dir
-              mountPath: /etc/ssh
-              subPath: etc-ssh-dir
-            - name: empty-dir
-              mountPath: /.ssh
-              subPath: ssh-dir
-            - name: staticsite
-              mountPath: /app
             {{- if .Values.cloneStaticSiteFromGit.extraVolumeMounts }}
             {{- include "common.tplvalues.render" (dict "value" .Values.cloneStaticSiteFromGit.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
@@ -153,17 +145,6 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            - name: empty-dir
-              mountPath: /etc/ssh
-              subPath: etc-ssh-dir
-            - name: empty-dir
-              mountPath: /.ssh
-              subPath: ssh-dir
-            - name: staticsite
-              mountPath: /app
-            {{- if .Values.cloneStaticSiteFromGit.extraVolumeMounts }}
-            {{- include "common.tplvalues.render" (dict "value" .Values.cloneStaticSiteFromGit.extraVolumeMounts "context" $) | nindent 12 }}
-            {{- end }}
           {{- if .Values.cloneStaticSiteFromGit.extraEnvVars }}
           env: {{- include "common.tplvalues.render" (dict "value" .Values.cloneStaticSiteFromGit.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -192,18 +173,10 @@ spec:
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
           {{- end }}
+          {{- if .Values.extraEnvVars }}
           env:
-            {{- if .Values.containerPorts.http }}
-            - name: VARNISH_HTTP_PORT_NUMBER
-              value: {{ .Values.containerPorts.http | quote }}
-            {{- end }}
-            {{- if .Values.containerPorts.https }}
-            - name: VARNISH_HTTPS_PORT_NUMBER
-              value: {{ .Values.containerPorts.https | quote }}
-            {{- end }}
-            {{- if .Values.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.extraEnvVars "context" $) | nindent 12 }}
-            {{- end }}
+          {{- end }}
           envFrom:
             {{- if .Values.extraEnvVarsCM }}
             - configMapRef:
@@ -226,20 +199,22 @@ spec:
             {{- include "common.tplvalues.render" (dict "value" .Values.extraContainerPorts "context" $) | nindent 12 }}
             {{- end }}
           {{- if not .Values.diagnosticMode.enabled }}
-          {{- if .Values.customLivenessProbe }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: {{ ternary "https" "http" (and (empty .Values.containerPorts.http) (not (empty .Values.containerPorts.https))) }}
-          {{- end }}
-          {{- if .Values.customReadinessProbe }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.readinessProbe.enabled }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.readinessProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: {{ ternary "https" "http" (and (empty .Values.containerPorts.http) (not (empty .Values.containerPorts.https))) }}
-          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 80
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
           {{- end }}
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
@@ -267,17 +242,21 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.containerPorts.metrics }}
           livenessProbe:
-            httpGet:
-              path: /metrics
-              port: metrics
-            initialDelaySeconds: 15
-            timeoutSeconds: 5
-          readinessProbe:
-            httpGet:
-              path: /metrics
-              port: metrics
+            http:
+              path: /.vchealthz
+              port: 6081
             initialDelaySeconds: 5
-            timeoutSeconds: 1
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            http:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
           {{- if .Values.metrics.resources }}
           resources: {{- toYaml .Values.metrics.resources | nindent 12 }}
           {{- else if ne .Values.metrics.resourcesPreset "none" }}

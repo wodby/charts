@@ -8,17 +8,9 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  {{- if .Values.containerPorts.fpm }}
-    - port: 9000
-      targetPort: fpm
+    - port: 25
+      targetPort: smtp
       protocol: TCP
-      name: fpm
-  {{- end }}
-  {{- if .Values.containerPorts.sshd }}
-    - port: 22
-      targetPort: sshd
-      protocol: TCP
-      name: sshd
-  {{- end }}
+      name: smtp
   selector:
     {{- include "opensmtpd.selectorLabels" . | nindent 4 }}
