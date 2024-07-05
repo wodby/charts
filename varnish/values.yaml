@@ -290,7 +290,7 @@ containerSecurityContext:
 ## @param containerPorts.https Sets https port inside VARNISH container
 ##
 containerPorts:
-  http: 80
+  http: 6081
 ## @param extraContainerPorts Array of additional container ports for the Varnish container
 ## e.g:
 ## extraContainerPorts:
