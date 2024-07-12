@@ -165,7 +165,7 @@ cloneHtdocsFromGit:
   branch: ""
   enableAutoRefresh: true
   interval: 60
-  resourcesPreset: "nano"
+  resourcesPreset: "none"
   resources: {}
   ## Useful to mount keys to connect through ssh. (normally used with extraVolumes)
   ## E.g:
