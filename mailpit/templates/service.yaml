@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mailpit.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mailpit.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 1025
+      targetPort: smtp
+      protocol: TCP
+      name: smtp
+    - port: 8025
+      targetPort: web
+      protocol: TCP
+      name: web
+  selector:
+    {{- include "mailpit.selectorLabels" . | nindent 4 }}
