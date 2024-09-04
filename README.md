@@ -6,6 +6,10 @@ helm package nginx
 helm package nfs-provisioner
 helm package mariadb
 helm package httpd
+helm package mailpit
+helm package gotenberg
+helm package opensmtpd
+helm package varnish
 ```
 
 ```
