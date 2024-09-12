@@ -16,6 +16,9 @@ image:
   digest: ""
   pullSecrets: []
 
+updateStrategy:
+  type: RollingUpdate
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

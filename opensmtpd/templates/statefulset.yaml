@@ -1,17 +1,20 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "opensmtpd.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "opensmtpd.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
   selector:
-    matchLabels:
-      {{- include "opensmtpd.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
+  serviceName: {{ include "opensmtpd.fullname" . }}
+  {{- if .Values.updateStrategy }}
+  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -26,6 +29,14 @@ spec:
     spec:
       {{- include "opensmtpd.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "opensmtpd.serviceAccountName" . }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "component" "customLabels" $podLabels "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "component" "customLabels" $podLabels "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
