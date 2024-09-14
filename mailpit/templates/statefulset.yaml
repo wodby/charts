@@ -82,7 +82,6 @@ spec:
         name: data
         {{- $claimLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.persistence.labels .Values.commonLabels ) "context" . ) }}
         labels: {{- include "common.tplvalues.render" ( dict "customLabels" $claimLabels "context" $) | nindent 10 }}
-          app.kubernetes.io/component: primary
         {{- if .Values.persistence.annotations }}
         annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 10 }}
         {{- end }}
