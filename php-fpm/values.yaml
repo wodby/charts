@@ -34,6 +34,18 @@ serviceAccount:
 podAnnotations: {}
 podLabels: {}
 
+## @param sidecars Sidecar parameters
+## e.g:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+sidecars: []
+
 podSecurityContext: {}
   # fsGroup: 2000
 
