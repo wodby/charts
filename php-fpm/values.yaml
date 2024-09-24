@@ -49,8 +49,9 @@ sidecars: []
 podSecurityContext: {}
   # fsGroup: 2000
 
-containerPorts:
-  fpm: 9000
+containerPort:
+  name: fpm
+  number: 9000
 
 securityContext:
   capabilities:
@@ -81,7 +82,17 @@ envVars: []
 command: []
 args: []
 
-livenessProbe: {}
+livenessProbe:
+  exec:
+    command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
+  initialDelaySeconds: 80
+  failureThreshold: 2
+  timeoutSeconds: 3
+  periodSeconds: 30
 readinessProbe:
   exec:
     command:

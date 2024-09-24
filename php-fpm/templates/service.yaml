@@ -8,17 +8,9 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  {{- if .Values.containerPorts.fpm }}
-    - port: 9000
-      targetPort: fpm
+    - port: {{ .Values.containerPort.number }}
+      targetPort: {{ .Values.containerPort.name }}
       protocol: TCP
-      name: fpm
-  {{- end }}
-  {{- if .Values.containerPorts.sshd }}
-    - port: 22
-      targetPort: sshd
-      protocol: TCP
-      name: sshd
-  {{- end }}
+      name: {{ .Values.containerPort.name }}
   selector:
     {{- include "php-fpm.selectorLabels" . | nindent 4 }}
