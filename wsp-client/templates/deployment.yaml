@@ -22,10 +22,15 @@ spec:
       {{- include "wsp-client.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        {{- include "wsp-client.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "wsp-client.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: wsp-client

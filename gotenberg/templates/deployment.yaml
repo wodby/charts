@@ -22,10 +22,15 @@ spec:
       {{- include "gotenberg.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        {{- include "gotenberg.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gotenberg.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: gotenberg
@@ -34,12 +39,9 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+          {{- with .Values.envVars }}
           env:
-          {{- range $name, $value := .Values.env.open }}
-          {{- if not (empty $value) }}
-            - name: {{ $name | quote }}
-              value: {{ $value | quote }}
-          {{- end }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
