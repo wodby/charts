@@ -32,7 +32,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          {{- range $name, $value := .Values.env.open }}
+            - name: WSP_CLIENT_ID
+              value: {{ .Values.clientID }}
+            - name: WSP_TARGET_ADDR
+              value: {{ .Values.targetAddr }}
+            - name: WSP_CLIENT_SECRET_KEY
+              value: {{ ..Values.secretKey }}
+          {{- range $name, $value := .Values.envVars }}
           {{- if not (empty $value) }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}

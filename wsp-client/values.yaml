@@ -25,6 +25,10 @@ resources: {}
 #    cpu: 600m
 #    memory: 512Mi
 
+clientID: ''
+secretKey: ''
+targetAddr: 'ws://localhost:8888'
+
 nodeSelector: {}
 
 tolerations: []
