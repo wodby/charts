@@ -31,19 +31,10 @@ spec:
         - name: wsp-client
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.envVars }}
           env:
-            - name: WSP_CLIENT_ID
-              value: {{ .Values.clientID }}
-            - name: WSP_TARGET_ADDR
-              value: {{ .Values.targetAddr }}
-            - name: WSP_CLIENT_SECRET_KEY
-              value: {{ .Values.secretKey }}
-          {{- range $name, $value := .Values.envVars }}
-          {{- if not (empty $value) }}
-            - name: {{ $name | quote }}
-              value: {{ $value | quote }}
-          {{- end }}
-          {{- end }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}          
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
