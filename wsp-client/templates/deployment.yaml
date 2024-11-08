@@ -1,37 +1,26 @@
-apiVersion: apps/v1
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
 kind: Deployment
 metadata:
-  name: {{ template "wsp-client.fullname" . }}
-  labels:
-    {{ include "wsp-client.labels" . | nindent 4 }}
-    app: {{ template "wsp-client.name" . }}
-    chart: {{ template "wsp-client.chart" . }}
-    heritage: {{ .Release.Service }}
-  annotations:
-{{- if .Values.annotations }}
-{{ toYaml .Values.annotations | indent 8 }}
-{{- end }}
-spec:
-  {{- with .Values.imagePullSecrets }}
-  imagePullSecrets:
-    {{- toYaml . | nindent 8 }}
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-  replicas: {{ .Values.replicaCount }}
+spec:
+  replicas: 1
+  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
   selector:
-    matchLabels:
-      {{- include "wsp-client.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "wsp-client.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
+        {{- if .Values.podAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
         {{- end }}
     spec:
+      serviceAccountName: {{ template "wsp-client.serviceAccountName" . }}      
       containers:
         - name: wsp-client
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -40,17 +29,15 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}          
-          resources:
-{{ toYaml .Values.resources | indent 12 }}
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
-    {{- end }}
+        - name: proxy
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - kubectl
+            - proxy
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}

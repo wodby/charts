@@ -1,3 +1,9 @@
-apiVersion: v1
 name: wsp-client
+apiVersion: v2
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/bitnamicharts
+    tags:
+      - bitnami-common
+    version: 2.x.x
 version: 0.1.0
