@@ -1,14 +1,9 @@
-{{- /*
-Copyright VMware, Inc.
-SPDX-License-Identifier: APACHE-2.0
-*/}}
-
 {{- $customUser := include "postgresql.v1.username" . }}
 apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
 kind: StatefulSet
 metadata:
   name: {{ include "postgresql.v1.primary.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   {{- $labels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.labels .Values.commonLabels ) "context" . ) }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" $labels "context" $ ) | nindent 4 }}
     app.kubernetes.io/component: primary
@@ -31,7 +26,7 @@ spec:
       name: {{ include "postgresql.v1.primary.fullname" . }}
       labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
         app.kubernetes.io/component: primary
-      {{- if or (include "postgresql.v1.primary.createConfigmap" .) (include "postgresql.v1.primary.createExtendedConfigmap" .) .Values.primary.podAnnotations }}
+      {{- if or .Values.passwordUpdateJob.enabled (include "postgresql.v1.primary.createConfigmap" .) (include "postgresql.v1.primary.createExtendedConfigmap" .) .Values.primary.podAnnotations }}
       annotations:
         {{- if (include "postgresql.v1.primary.createConfigmap" .) }}
         checksum/configuration: {{ pick (include (print $.Template.BasePath "/primary/configmap.yaml") . | fromYaml) "data" | toYaml | sha256sum }}
@@ -102,8 +97,6 @@ spec:
           args: {{- include "common.tplvalues.render" (dict "value" .Values.primary.args "context" $) | nindent 12 }}
           {{- end }}
           env:
-            - name: BITNAMI_DEBUG
-              value: {{ ternary "true" "false" (or .Values.image.debug .Values.diagnosticMode.enabled) | quote }}
             - name: POSTGRESQL_PORT_NUMBER
               value: {{ .Values.containerPorts.postgresql | quote }}
             - name: POSTGRESQL_VOLUME_DIR
@@ -113,68 +106,16 @@ spec:
               value: {{ .Values.postgresqlDataDir | quote }}
             {{- end }}
             # Authentication
-            {{- if or (eq $customUser "postgres") (empty $customUser) }}
-            {{- if .Values.auth.enablePostgresUser }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: POSTGRES_PASSWORD_FILE
-              value: {{ printf "/opt/bitnami/postgresql/secrets/%s" (include "postgresql.v1.adminPasswordKey" .) }}
-            {{- else }}
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: {{ include "postgresql.v1.adminPasswordKey" . }}
-            {{- end }}
-            {{- else }}
-            - name: ALLOW_EMPTY_PASSWORD
-              value: "true"
-            {{- end }}
-            {{- else }}
-            - name: POSTGRES_USER
-              value: {{ $customUser | quote }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: POSTGRES_PASSWORD_FILE
-              value: {{ printf "/opt/bitnami/postgresql/secrets/%s" (include "postgresql.v1.userPasswordKey" .) }}
-            {{- else }}
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: {{ include "postgresql.v1.userPasswordKey" . }}
-            {{- end }}
-            {{- if .Values.auth.enablePostgresUser }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: POSTGRES_POSTGRES_PASSWORD_FILE
-              value: {{ printf "/opt/bitnami/postgresql/secrets/%s" (include "postgresql.v1.adminPasswordKey" .) }}
-            {{- else }}
-            - name: POSTGRES_POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: {{ include "postgresql.v1.adminPasswordKey" . }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
             {{- if (include "postgresql.v1.database" .) }}
             - name: POSTGRES_DATABASE
               value: {{ (include "postgresql.v1.database" .) | quote }}
             {{- end }}
-            # Replication
             {{- if or (eq .Values.architecture "replication") .Values.primary.standby.enabled }}
+            # Replication
             - name: POSTGRES_REPLICATION_MODE
               value: {{ ternary "slave" "master" .Values.primary.standby.enabled | quote }}
             - name: POSTGRES_REPLICATION_USER
               value: {{ .Values.auth.replicationUsername | quote }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: POSTGRES_REPLICATION_PASSWORD_FILE
-              value: {{ printf "/opt/bitnami/postgresql/secrets/%s" (include "postgresql.v1.replicationPasswordKey" .) }}
-            {{- else }}
-            - name: POSTGRES_REPLICATION_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: {{ include "postgresql.v1.replicationPasswordKey" . }}
-            {{- end }}
             {{- if ne .Values.replication.synchronousCommit "off" }}
             - name: POSTGRES_SYNCHRONOUS_COMMIT_MODE
               value: {{ .Values.replication.synchronousCommit | quote }}
@@ -184,8 +125,8 @@ spec:
             - name: POSTGRES_CLUSTER_APP_NAME
               value: {{ .Values.replication.applicationName }}
             {{- end }}
-            # Initdb
             {{- if .Values.primary.initdb.args }}
+            # Initdb
             - name: POSTGRES_INITDB_ARGS
               value: {{ .Values.primary.initdb.args | quote }}
             {{- end }}
@@ -201,8 +142,8 @@ spec:
             - name: POSTGRES_INITSCRIPTS_PASSWORD
               value: {{ .Values.primary.initdb.password | quote }}
             {{- end }}
-            # Standby
             {{- if .Values.primary.standby.enabled }}
+            # Standby
             - name: POSTGRES_MASTER_HOST
               value: {{ .Values.primary.standby.primaryHost }}
             - name: POSTGRES_MASTER_PORT_NUMBER
@@ -338,17 +279,18 @@ spec:
                 - exec pg_isready -U {{ default "postgres" $customUser | quote }} {{- if and .Values.tls.enabled .Values.tls.certCAFilename }} -d "sslcert={{ include "postgresql.v1.tlsCert" . }} sslkey={{ include "postgresql.v1.tlsCertKey" . }}"{{- end }} -h 127.0.0.1 -p {{ .Values.containerPorts.postgresql }}
                 {{- end }}
           {{- end }}
-          readinessProbe:
+          {{- if .Values.primary.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.primary.customReadinessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.primary.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.primary.readinessProbe "enabled") "context" $) | nindent 12 }}
             exec:
               command:
-              - make
-              - check-ready
-              - -f
-              - /usr/local/bin/actions.mk
-            initialDelaySeconds: 5
-            failureThreshold: 2
-            timeoutSeconds: 3
-            periodSeconds: 30
+                - /bin/sh
+                - -c
+                - -e
+                {{- include "postgresql.v1.readinessProbeCommand" . | nindent 16 }}
+          {{- end }}
+          {{- end }}
           {{- if .Values.primary.resources }}
           resources: {{- toYaml .Values.primary.resources | nindent 12 }}
           {{- else if ne .Values.primary.resourcesPreset "none" }}
@@ -372,15 +314,6 @@ spec:
             {{- if or .Values.primary.extendedConfiguration .Values.primary.existingExtendedConfigmap }}
             - name: postgresql-extended-config
               mountPath: {{ .Values.primary.persistence.mountPath }}/conf/conf.d/
-            {{- end }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: postgresql-password
-              mountPath: /opt/bitnami/postgresql/secrets/
-            {{- end }}
-            {{- if .Values.tls.enabled }}
-            - name: postgresql-certificates
-              mountPath: /opt/bitnami/postgresql/certs
-              readOnly: true
             {{- end }}
             {{- if .Values.shmVolume.enabled }}
             - name: dshm
@@ -419,22 +352,6 @@ spec:
             {{- end }}
           {{- end }}
           env:
-            {{- $database := required "In order to enable metrics you need to specify a database (.Values.auth.database or .Values.global.postgresql.auth.database)" (include "postgresql.v1.database" .) }}
-            - name: DATA_SOURCE_URI
-              value: {{ printf "127.0.0.1:%d/%s?sslmode=disable" (int (include "postgresql.v1.service.port" .)) $database }}
-            {{- $pwdKey := ternary (include "postgresql.v1.adminPasswordKey" .) (include "postgresql.v1.userPasswordKey" .) (or (eq $customUser "postgres") (empty $customUser)) }}
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: DATA_SOURCE_PASS_FILE
-              value: {{ printf "/opt/bitnami/postgresql/secrets/%s" $pwdKey }}
-            {{- else }}
-            - name: DATA_SOURCE_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: {{ $pwdKey }}
-            {{- end }}
-            - name: DATA_SOURCE_USER
-              value: {{ default "postgres" $customUser | quote }}
             {{- if .Values.metrics.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.metrics.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}
@@ -470,10 +387,6 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            {{- if .Values.auth.usePasswordFiles }}
-            - name: postgresql-password
-              mountPath: /opt/bitnami/postgresql/secrets/
-            {{- end }}
             {{- if .Values.metrics.customMetrics }}
             - name: custom-metrics
               mountPath: /conf
@@ -505,6 +418,16 @@ spec:
         - name: postgresql-password
           secret:
             secretName: {{ include "postgresql.v1.secretName" . }}
+        {{- end }}
+        {{- if or .Values.primary.preInitDb.scriptsConfigMap .Values.primary.preInitDb.scripts }}
+        - name: custom-preinit-scripts
+          configMap:
+            name: {{ include "postgresql.v1.preInitDb.scriptsCM" . }}
+        {{- end }}
+        {{- if .Values.primary.preInitDb.scriptsSecret }}
+        - name: custom-preinit-scripts-secret
+          secret:
+            secretName: {{ tpl .Values.primary.preInitDb.scriptsSecret $ }}
         {{- end }}
         {{- if or .Values.primary.initdb.scriptsConfigMap .Values.primary.initdb.scripts }}
         - name: custom-init-scripts
@@ -570,6 +493,9 @@ spec:
         {{- end }}
         {{- if .Values.primary.persistence.dataSource }}
         dataSource: {{- include "common.tplvalues.render" (dict "value" .Values.primary.persistence.dataSource "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.primary.persistence.storageClass }}
+        storageClassName: {{ .Values.primary.persistence.storageClass }}
         {{- end }}
         resources:
           requests:
