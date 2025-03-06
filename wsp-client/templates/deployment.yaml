@@ -25,10 +25,19 @@ spec:
         - name: wsp-client
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.envVars }}
           env:
+            - name: WSP_CLIENT_ID
+              value: {{ .Values.wspClient.clientId | quote }}
+            - name: WSP_TARGET_ADDR
+              value: {{ .Values.wspClient.targetAddr | quote }}
+            - name: WSP_CLIENT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wspClient.existingSecret | default (printf "%s-secret" (include "common.names.fullname" .)) }}
+                  key: WSP_CLIENT_SECRET_KEY
+            {{- with .Values.envVars }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}          
+            {{- end }}          
         - name: proxy
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}

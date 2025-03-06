@@ -36,6 +36,11 @@ affinity: {}
 podAnnotations: {}
 podLabels: {}
 
+wspClient:
+  clientId: ""
+  targetAddr: ""
+  secretKey: ""
+
 verticalAutoscaling:
   enabled: false
   minAllowed: 50m
