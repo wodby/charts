@@ -1,0 +1,86 @@
+name: Package and Push Helm Charts to Docker Hub OCI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/Chart.yaml'
+      - '**/values.yaml'
+      - '**/templates/**'
+      - '.github/workflows/**'
+  workflow_dispatch: {}
+
+concurrency:
+  group: publish-charts-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Package and Push Charts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: latest
+
+      - name: Log in to Docker Hub OCI registry
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_PASSWORD" ]; then
+            echo "DOCKER_USERNAME and/or DOCKER_PASSWORD are not set as repo secrets." >&2
+            exit 1
+          fi
+          echo "$DOCKER_PASSWORD" | helm registry login registry-1.docker.io \
+            --username "$DOCKER_USERNAME" \
+            --password-stdin
+
+      - name: Package and push all charts
+        env:
+          REGISTRY: registry-1.docker.io
+          ORG: wodby
+        run: |
+          set -euo pipefail
+
+          # Ensure we are at repo root
+          ls -1
+
+          packaged_dir="packaged"
+          mkdir -p "$packaged_dir"
+
+          found_any=false
+          for d in */ ; do
+            # Skip common non-chart dirs
+            [ "$d" = ".github/" ] && continue
+
+            if [ -f "$d/Chart.yaml" ]; then
+              found_any=true
+              echo "\n==> Processing chart: $d"
+
+              # Build dependencies if any (don't fail if none)
+              helm dependency build "$d" || true
+
+              # Lint (optional, won't stop the pipeline on lint warnings)
+              helm lint "$d" || true
+
+              # Package chart and capture the resulting .tgz path
+              pkg_path=$(helm package "$d" --destination "$packaged_dir" | awk '{print $NF}')
+              echo "Packaged: $pkg_path"
+
+              # Push to Docker Hub OCI registry
+              helm push "$pkg_path" "oci://$REGISTRY/$ORG"
+            fi
+          done
+
+          if [ "$found_any" = false ]; then
+            echo "No charts found at repository root." >&2
+            exit 1
+          fi
