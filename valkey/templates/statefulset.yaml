@@ -62,6 +62,13 @@ spec:
           {{- end }}
           {{- with .Values.envVars }}
           env:
+            {{- if .Values.password }} 
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "valkey.secretName" . }}
+                  key: password
+            {{- end }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:

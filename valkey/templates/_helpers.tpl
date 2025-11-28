@@ -74,3 +74,12 @@ Return the proper Docker Image Registry Secret Names
 {{- define "valkey.imagePullSecrets" -}}
 {{ include "common.images.renderPullSecrets" (dict "images" (list .Values.image) "context" $) }}
 {{- end -}}
+
+{{/*
+Return true if a secret object should be created for MariaDB
+*/}}
+{{- define "valkey.createSecret" -}}
+{{- if not (.Values.auth.existingSecret) }}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
