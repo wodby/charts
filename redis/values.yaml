@@ -1,0 +1,179 @@
+# Default values for redis.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: wodby/redis
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  digest: ""
+  pullSecrets: []
+
+updateStrategy:
+  type: RollingUpdate
+
+podAffinityPreset: ""
+## @param primary.podAntiAffinityPreset MariaDB primary pod anti-affinity preset. Ignored if `primary.affinity` is set. Allowed values: `soft` or `hard`
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+##
+podAntiAffinityPreset: soft
+## Mariadb Primary node affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+##
+nodeAffinityPreset:
+  ## @param primary.nodeAffinityPreset.type MariaDB primary node affinity preset type. Ignored if `primary.affinity` is set. Allowed values: `soft` or `hard`
+  ##
+  type: ""
+  ## @param primary.nodeAffinityPreset.key MariaDB primary node label key to match Ignored if `primary.affinity` is set.
+  ## E.g.
+  ## key: "kubernetes.io/e2e-az-name"
+  ##
+  key: ""
+  ## @param primary.nodeAffinityPreset.values MariaDB primary node label values to match. Ignored if `primary.affinity` is set.
+  ## E.g.
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  ##
+  values: []
+## @param primary.affinity Affinity for MariaDB primary pods assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## Note: podAffinityPreset, podAntiAffinityPreset, and  nodeAffinityPreset will be ignored when it's set
+##
+affinity: {}
+
+persistence:
+  ## @param primary.persistence.enabled Enable persistence on MariaDB primary replicas using a `PersistentVolumeClaim`. If false, use emptyDir
+  ##
+  enabled: false
+  ## @param primary.persistence.existingClaim Name of an existing `PersistentVolumeClaim` for MariaDB primary replicas
+  ## NOTE: When it's set the rest of persistence parameters are ignored
+  ##
+  existingClaim: ""
+  ## @param primary.persistence.subPath Subdirectory of the volume to mount at
+  ##
+  subPath: ""
+  ## @param primary.persistence.storageClass MariaDB primary persistent volume storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
+  ## @param primary.persistence.labels Labels for the PVC
+  ##
+  labels: {}
+  ## @param primary.persistence.annotations MariaDB primary persistent volume claim annotations
+  ##
+  annotations: {}
+  ## @param primary.persistence.accessModes MariaDB primary persistent volume access Modes
+  ##
+  accessModes:
+    - ReadWriteOnce
+  ## @param primary.persistence.size MariaDB primary persistent volume size
+  ##
+  size: 1Gi
+  ## @param primary.persistence.selector Selector to match an existing Persistent Volume
+  ## selector:
+  ##   matchLabels:
+  ##     app: my-app
+  ##
+  selector: {}
+
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  capabilities:
+    add:
+    - SYS_PTRACE
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+envVars: []
+command: []
+args: []
+
+livenessProbe: {}
+readinessProbe:
+  exec:
+    command:
+    - make
+    - check-ready
+    - -f
+    - /usr/local/bin/actions.mk
+  initialDelaySeconds: 5
+  failureThreshold: 2
+  timeoutSeconds: 3
+  periodSeconds: 5
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+terminationGracePeriodSeconds: 30

@@ -1,9 +1,7 @@
 apiVersion: v2
 dependencies:
 - name: common
-  repository: oci://registry-1.docker.io/bitnamicharts
-  tags:
-  - bitnami-common
-  version: 2.x.x
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x
 name: httpd
-version: 0.1.0
+version: 0.2.0

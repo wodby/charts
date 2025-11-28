@@ -1,6 +1,6 @@
 dependencies:
 - name: common
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 2.23.0
-digest: sha256:fbd6439f12ded949c04553b9c52a4c8153a8f2790147d972b314ddcd46921a14
-generated: "2024-09-23T12:18:03.916232+07:00"
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.0.0
+digest: sha256:e9b26afd142b485bbb24f86332f1c1a0b47d78a22600ec307f39a377a19c3f91
+generated: "2025-11-28T17:35:41.612465+08:00"
