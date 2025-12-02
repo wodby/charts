@@ -36,6 +36,8 @@ autoscaling:
   maxReplicas: 1
   targetCPUUtilizationPercentage: 80
 
+containerPorts:
+  gotenberg: 3000
 
 nodeSelector: {}
 

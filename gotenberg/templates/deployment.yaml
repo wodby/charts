@@ -1,22 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "gotenberg.fullname" . }}
+  name: {{ include "gotenberg.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{ include "gotenberg.labels" . | nindent 4 }}
-    app: {{ template "gotenberg.name" . }}
-    chart: {{ template "gotenberg.chart" . }}
-    heritage: {{ .Release.Service }}
-  annotations:
-{{- if .Values.annotations }}
-{{ toYaml .Values.annotations | indent 8 }}
-{{- end }}
+    {{- include "gotenberg.labels" . | nindent 4 }}
 spec:
-  {{- with .Values.imagePullSecrets }}
-  imagePullSecrets:
-    {{- toYaml . | nindent 8 }}
-  {{- end }}
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "gotenberg.selectorLabels" . | nindent 6 }}
@@ -32,28 +24,52 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- include "gotenberg.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "gotenberg.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       containers:
         - name: gotenberg
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "gotenberg.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 3000
+          {{- if .Values.command }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
+          {{- end }}
           {{- with .Values.envVars }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          ports:
+            {{- if .Values.containerPorts.gotenberg }}
+            - name: gotenberg
+              containerPort: 3000
+              protocol: TCP
+            {{- end }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
-    {{- with .Values.nodeSelector }}
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.affinity }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
       affinity:
-{{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-{{ toYaml . | indent 8 }}
-    {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
