@@ -76,10 +76,21 @@ Return the proper Docker Image Registry Secret Names
 {{- end -}}
 
 {{/*
-Return true if a secret object should be created for MariaDB
+Return true if a secret object should be created for Valkey
 */}}
 {{- define "valkey.createSecret" -}}
 {{- if not (.Values.auth.existingSecret) }}
     {{- true -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret with Valkey credentials
+*/}}
+{{- define "valkey.secretName" -}}
+    {{- if .Values.auth.existingSecret -}}
+        {{- printf "%s" (tpl .Values.auth.existingSecret $) -}}
+    {{- else -}}
+        {{- printf "%s" (include "common.names.fullname" .) -}}
+    {{- end -}}
 {{- end -}}
