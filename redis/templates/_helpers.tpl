@@ -74,3 +74,23 @@ Return the proper Docker Image Registry Secret Names
 {{- define "redis.imagePullSecrets" -}}
 {{ include "common.images.renderPullSecrets" (dict "images" (list .Values.image) "context" $) }}
 {{- end -}}
+
+{{/*
+Return true if a secret object should be created for redis
+*/}}
+{{- define "redis.createSecret" -}}
+{{- if not (.Values.auth.existingSecret) }}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret with redis credentials
+*/}}
+{{- define "redis.secretName" -}}
+    {{- if .Values.auth.existingSecret -}}
+        {{- printf "%s" (tpl .Values.auth.existingSecret $) -}}
+    {{- else -}}
+        {{- printf "%s" (include "common.names.fullname" .) -}}
+    {{- end -}}
+{{- end -}}
