@@ -60,8 +60,12 @@ spec:
           {{- if .Values.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
-          {{- with .Values.envVars }}
           env:
+            - name: WODBY
+              value: '1'
+            {{- if .Values.envVars }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
+            {{- end }}
             {{- if .Values.password }} 
             - name: VALKEY_PASSWORD
               valueFrom:
@@ -69,8 +73,6 @@ spec:
                   name: {{ template "valkey.secretName" . }}
                   key: password
             {{- end }}
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           ports:
             - name: valkey
               containerPort: 6379
