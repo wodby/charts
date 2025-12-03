@@ -1,0 +1,141 @@
+# Default values for solr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: wodby/solr
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  digest: ""
+  pullSecrets: []
+
+updateStrategy:
+  type: RollingUpdate
+
+podAffinityPreset: ""
+##
+podAntiAffinityPreset: soft
+##
+nodeAffinityPreset:
+  ##
+  type: ""
+  ##
+  key: ""
+  ##
+  values: []
+##
+affinity: {}
+
+persistence:
+  ##
+  enabled: false
+  ##
+  existingClaim: ""
+  ##
+  subPath: ""
+  ##
+  storageClass: ""
+  ##
+  labels: {}
+  ##
+  annotations: {}
+  ##
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+  selector: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8983
+
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 200m
+  #   memory: 512Mi
+
+envVars: []
+command: []
+args: []
+
+livenessProbe:
+  exec:
+    command:
+    - make
+    - check-ready
+    - -f
+    - /usr/local/bin/actions.mk
+  initialDelaySeconds: 60
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  exec:
+    command:
+    - make
+    - check-ready
+    - -f
+    - /usr/local/bin/actions.mk
+  initialDelaySeconds: 10
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 10
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+terminationGracePeriodSeconds: 30
