@@ -1,6 +1,3 @@
-# Copyright VMware, Inc.
-# SPDX-License-Identifier: APACHE-2.0
-
 ## @section Global parameters
 ## Global Docker image parameters
 ## Please, note that this will override the image parameters, including dependencies, configured to use the global value
@@ -67,8 +64,6 @@ diagnosticMode:
     - infinity
 ## @section NGINX parameters
 
-## Bitnami NGINX image version
-## ref: https://hub.docker.com/r/bitnami/nginx/tags/
 ## @param image.registry [default: REGISTRY_NAME] NGINX image registry
 ## @param image.repository [default: REPOSITORY_NAME/nginx] NGINX image repository
 ## @skip image.tag NGINX image tag (immutable tags are recommended)
@@ -305,7 +300,6 @@ extraContainerPorts: []
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
 ## @param resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if resources is set (resources is recommended for production).
-## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
 ##
 resourcesPreset: "none"
 ## @param resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -772,8 +766,6 @@ metrics:
   ## @param metrics.enabled Start a Prometheus exporter sidecar container
   ##
   enabled: false
-  ## Bitnami NGINX Prometheus Exporter image
-  ## ref: https://hub.docker.com/r/bitnami/nginx-exporter/tags/
   ## @param metrics.image.registry [default: REGISTRY_NAME] NGINX Prometheus exporter image registry
   ## @param metrics.image.repository [default: REPOSITORY_NAME/nginx-exporter] NGINX Prometheus exporter image repository
   ## @skip metrics.image.tag NGINX Prometheus exporter image tag (immutable tags are recommended)
@@ -842,7 +834,6 @@ metrics:
   ## resources, such as Minikube. If you do want to specify resources, uncomment the following
   ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   ## @param metrics.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if metrics.resources is set (metrics.resources is recommended for production).
-  ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
   ##
   resourcesPreset: "none"
   ## @param metrics.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -881,7 +872,6 @@ metrics:
     ##
     scrapeTimeout: ""
     ## @param metrics.serviceMonitor.selector Prometheus instance selector labels
-    ## ref: https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-configuration
     ##
     ## selector:
     ##   prometheus: my-prometheus

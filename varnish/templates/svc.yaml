@@ -36,14 +36,14 @@ spec:
   loadBalancerClass: {{ .Values.service.loadBalancerClass }}
   {{- end }}
   ports:
-    {{- if .Values.containerPorts.http }}
     - name: http
-      port: {{ .Values.service.ports.http }}
-      targetPort: {{ .Values.service.targetPort.http }}
-      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.http)) }}
-      nodePort: {{ .Values.service.nodePorts.http }}
-      {{- end }}
-    {{- end }}
+      port: 6081
+      protocol: TCP
+      targetPort: http
+    - name: admin
+      port: 6082
+      protocol: TCP
+      targetPort: admin
     {{- if .Values.metrics.enabled }}
     - name: metrics
       port: {{ .Values.metrics.service.port }}
