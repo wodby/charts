@@ -1,0 +1,12 @@
+apiVersion: v2
+appVersion: 3.9.3
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x
+description: Apache ZooKeeper provides a reliable, centralized register of configuration
+  data and services for distributed applications.
+keywords:
+- zookeeper
+name: zookeeper
+version: 0.1.0

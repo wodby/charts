@@ -19,3 +19,4 @@
 | solr            | wodby/solr                                 | 0.1.0   |
 | valkey          | wodby/valkey                               | 0.1.0   |
 | varnish         | wodby/varnish                              | 0.2.0   |
+| zookeeper       | wodby/zookeeper                            | 0.1.0   |
