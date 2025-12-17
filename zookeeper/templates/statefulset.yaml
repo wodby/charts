@@ -300,10 +300,12 @@ spec:
               command:
                 - make
                 - check-ready
-                - wait_seconds=10
-                - max_try=10
                 - -f
                 - /usr/local/bin/actions.mk
+            initialDelaySeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 5
+            periodSeconds: 5
           {{- end }}
           {{- if .Values.customStartupProbe }}
           startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customStartupProbe "context" $) | nindent 12 }}
