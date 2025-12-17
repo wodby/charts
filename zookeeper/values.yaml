@@ -628,7 +628,7 @@ service:
 networkPolicy:
   ## @param networkPolicy.enabled Specifies whether a NetworkPolicy should be created
   ##
-  enabled: true
+  enabled: false
   ## @param networkPolicy.allowExternal Don't require client label for connections
   ## When set to false, only pods with the correct client label will have network access to the port Redis&reg; is
   ## listening on. When true, zookeeper accept connections from any source (with the correct destination port).
