@@ -300,6 +300,8 @@ spec:
               command:
                 - make
                 - check-ready
+                - wait_seconds=10
+                - max_try=10
                 - -f
                 - /usr/local/bin/actions.mk
           {{- end }}
