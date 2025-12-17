@@ -303,13 +303,6 @@ spec:
           {{- if not .Values.diagnosticMode.enabled }}
           {{- if .Values.customLivenessProbe }}
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
-          {{- else if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled" "probeCommandTimeout") "context" $) | nindent 12 }}
-            exec:
-              command:
-                - /bin/bash
-                - -ec
-                - ZOO_HC_TIMEOUT={{ .Values.livenessProbe.probeCommandTimeout }} /opt/bitnami/scripts/zookeeper/healthcheck.sh
           {{- end }}
           {{- if .Values.customReadinessProbe }}
           readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
@@ -317,9 +310,10 @@ spec:
           readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.readinessProbe "enabled" "probeCommandTimeout") "context" $) | nindent 12 }}
             exec:
               command:
-                - /bin/bash
-                - -ec
-                - ZOO_HC_TIMEOUT={{ .Values.readinessProbe.probeCommandTimeout }} /opt/bitnami/scripts/zookeeper/healthcheck.sh
+                - make
+                - check-ready
+                - -f
+                - /usr/local/bin/actions.mk
           {{- end }}
           {{- if .Values.customStartupProbe }}
           startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customStartupProbe "context" $) | nindent 12 }}
@@ -351,11 +345,6 @@ spec:
             {{- if .Values.dataLogDir }}
             - name: data-log
               mountPath: {{ .Values.dataLogDir }}
-            {{- end }}
-            {{- if or .Values.configuration .Values.existingConfigmap }}
-            - name: config
-              mountPath: /opt/bitnami/zookeeper/conf/zoo.cfg
-              subPath: zoo.cfg
             {{- end }}
             {{- if .Values.tls.client.enabled }}
             - name: client-shared-certs
