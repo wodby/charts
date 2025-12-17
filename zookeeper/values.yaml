@@ -248,8 +248,6 @@ extraEnvVarsCM: ""
 extraEnvVarsSecret: ""
 ## @param command Override default container command (useful when using custom images)
 ##
-command:
-  - /scripts/setup.sh
 ## @param args Override default container args (useful when using custom images)
 ##
 args: []
