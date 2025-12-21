@@ -85,19 +85,16 @@ spec:
           args: {{- include "common.tplvalues.render" (dict "value" .Values.primary.args "context" $) | nindent 12 }}
           {{- end }}
           env:
-            - name: POSTGRESQL_PORT_NUMBER
-              value: {{ .Values.containerPorts.postgresql | quote }}
-            - name: POSTGRESQL_VOLUME_DIR
-              value: {{ .Values.primary.persistence.mountPath | quote }}
-            {{- if .Values.primary.persistence.mountPath }}
-            - name: PGDATA
-              value: {{ .Values.postgresqlDataDir | quote }}
-            {{- end }}
             # Authentication
             {{- if (include "postgresql.v1.database" .) }}
             - name: POSTGRES_DATABASE
               value: {{ (include "postgresql.v1.database" .) | quote }}
             {{- end }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.v1.secretName" . }}
+                  key: {{ include "postgresql.v1.adminPasswordKey" . }}            
             {{- if or (eq .Values.architecture "replication") .Values.primary.standby.enabled }}
             # Replication
             - name: POSTGRES_REPLICATION_MODE
@@ -137,48 +134,7 @@ spec:
             - name: POSTGRES_MASTER_PORT_NUMBER
               value: {{ .Values.primary.standby.primaryPort | quote }}
             {{- end }}
-            # LDAP
-            - name: POSTGRESQL_ENABLE_LDAP
-              value: {{ ternary "yes" "no" .Values.ldap.enabled | quote }}
-            {{- if .Values.ldap.enabled }}
-            {{- if or .Values.ldap.url .Values.ldap.uri }}
-            - name: POSTGRESQL_LDAP_URL
-              value: {{ coalesce .Values.ldap.url .Values.ldap.uri }}
-            {{- else }}
-            - name: POSTGRESQL_LDAP_SERVER
-              value: {{ .Values.ldap.server }}
-            - name: POSTGRESQL_LDAP_PORT
-              value: {{ .Values.ldap.port | quote }}
-            - name: POSTGRESQL_LDAP_SCHEME
-              value: {{ .Values.ldap.scheme }}
-            {{- if (include "postgresql.v1.ldap.tls.enabled" .) }}
-            - name: POSTGRESQL_LDAP_TLS
-              value: "1"
-            {{- end }}
-            - name: POSTGRESQL_LDAP_PREFIX
-              value: {{ .Values.ldap.prefix | quote }}
-            - name: POSTGRESQL_LDAP_SUFFIX
-              value: {{ .Values.ldap.suffix | quote }}
-            - name: POSTGRESQL_LDAP_BASE_DN
-              value: {{ coalesce .Values.ldap.baseDN .Values.ldap.basedn }}
-            - name: POSTGRESQL_LDAP_BIND_DN
-              value: {{ coalesce .Values.ldap.bindDN .Values.ldap.binddn}}
-            {{- if or  (not (empty .Values.ldap.bind_password)) (not (empty .Values.ldap.bindpw)) }}
-            - name: POSTGRESQL_LDAP_BIND_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "postgresql.v1.secretName" . }}
-                  key: ldap-password
-            {{- end }}
-            - name: POSTGRESQL_LDAP_SEARCH_ATTR
-              value: {{ coalesce .Values.ldap.search_attr .Values.ldap.searchAttribute }}
-            - name: POSTGRESQL_LDAP_SEARCH_FILTER
-              value: {{ coalesce .Values.ldap.search_filter .Values.ldap.searchFilter }}
-            {{- end }}
-            {{- end }}
             # TLS
-            - name: POSTGRESQL_ENABLE_TLS
-              value: {{ ternary "yes" "no" .Values.tls.enabled | quote }}
             {{- if .Values.tls.enabled }}
             - name: POSTGRESQL_TLS_PREFER_SERVER_CIPHERS
               value: {{ ternary "yes" "no" .Values.tls.preferServerCiphers | quote }}
@@ -195,32 +151,7 @@ spec:
               value: {{ include "postgresql.v1.tlsCRL" . }}
             {{- end }}
             {{- end }}
-            # Audit
-            - name: POSTGRESQL_LOG_HOSTNAME
-              value: {{ .Values.audit.logHostname | quote }}
-            - name: POSTGRESQL_LOG_CONNECTIONS
-              value: {{ .Values.audit.logConnections | quote }}
-            - name: POSTGRESQL_LOG_DISCONNECTIONS
-              value: {{ .Values.audit.logDisconnections | quote }}
-            {{- if .Values.audit.logLinePrefix }}
-            - name: POSTGRESQL_LOG_LINE_PREFIX
-              value: {{ .Values.audit.logLinePrefix | quote }}
-            {{- end }}
-            {{- if .Values.audit.logTimezone }}
-            - name: POSTGRESQL_LOG_TIMEZONE
-              value: {{ .Values.audit.logTimezone | quote }}
-            {{- end }}
-            {{- if .Values.audit.pgAuditLog }}
-            - name: POSTGRESQL_PGAUDIT_LOG
-              value: {{ .Values.audit.pgAuditLog | quote }}
-            {{- end }}
-            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
-              value: {{ .Values.audit.pgAuditLogCatalog | quote }}
             # Others
-            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
-              value: {{ .Values.audit.clientMinMessages | quote }}
-            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
-              value: {{ .Values.postgresqlSharedPreloadLibraries | quote }}
             {{- if .Values.primary.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.primary.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}
@@ -291,10 +222,6 @@ spec:
             - name: empty-dir
               mountPath: /tmp
               subPath: tmp-dir
-            {{- if or .Values.primary.initdb.scriptsConfigMap .Values.primary.initdb.scripts }}
-            - name: custom-init-scripts
-              mountPath: /docker-entrypoint-initdb.d/
-            {{- end }}
             {{- if .Values.primary.initdb.scriptsSecret }}
             - name: custom-init-scripts-secret
               mountPath: /docker-entrypoint-initdb.d/secret
@@ -406,26 +333,6 @@ spec:
         - name: postgresql-password
           secret:
             secretName: {{ include "postgresql.v1.secretName" . }}
-        {{- end }}
-        {{- if or .Values.primary.preInitDb.scriptsConfigMap .Values.primary.preInitDb.scripts }}
-        - name: custom-preinit-scripts
-          configMap:
-            name: {{ include "postgresql.v1.preInitDb.scriptsCM" . }}
-        {{- end }}
-        {{- if .Values.primary.preInitDb.scriptsSecret }}
-        - name: custom-preinit-scripts-secret
-          secret:
-            secretName: {{ tpl .Values.primary.preInitDb.scriptsSecret $ }}
-        {{- end }}
-        {{- if or .Values.primary.initdb.scriptsConfigMap .Values.primary.initdb.scripts }}
-        - name: custom-init-scripts
-          configMap:
-            name: {{ include "postgresql.v1.initdb.scriptsCM" . }}
-        {{- end }}
-        {{- if .Values.primary.initdb.scriptsSecret }}
-        - name: custom-init-scripts-secret
-          secret:
-            secretName: {{ tpl .Values.primary.initdb.scriptsSecret $ }}
         {{- end }}
         {{- if  .Values.tls.enabled }}
         - name: raw-certificates
