@@ -1,0 +1,11 @@
+apiVersion: v2
+name: tailscale
+description: A Helm chart for Tailscale
+
+type: application
+
+version: 0.1.0
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x

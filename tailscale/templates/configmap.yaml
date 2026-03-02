@@ -1,0 +1,37 @@
+{{- if and .Values.serve.host .Values.serve.namespace .Values.serve.port (or (eq .Values.serve.protocol "http") (eq .Values.serve.protocol "tcp")) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tailscale.serveConfigMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tailscale.labels" . | nindent 4 }}
+data:
+  serve.json: |
+    {{- if eq .Values.serve.protocol "http" }}
+    {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "${TS_CERT_DOMAIN}:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://{{ .Values.serve.host }}.{{ .Values.serve.namespace }}.svc.cluster.local:{{ .Values.serve.port }}"
+            }
+          }
+        }
+      }
+    }
+    {{- else if eq .Values.serve.protocol "tcp" }}
+    {
+      "TCP": {
+        "{{ .Values.serve.port }}": {
+          "Forward": "{{ .Values.serve.host }}.{{ .Values.serve.namespace }}.svc.cluster.local:{{ .Values.serve.port }}"
+        }
+      }
+    }
+    {{- end }}
+{{- end }}
