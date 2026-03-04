@@ -1,8 +1,8 @@
 # Helm Charts
 
-These charts are designed to be used for deployment with Wodby [services](https://github.com/wodby/services) and are not generic enough to be used independently.
+These charts are designed to be used for deployment with Wodby [services](https://github.com/wodby/services) and may not be generic enough to be used fully independently.
 
-Some functionality like certificates, config maps and network policies handled directly by Wodby without helm manifests. 
+Some functionality like certificates, certain config maps and network policies handled directly by Wodby without helm manifests.
 
 | Chart           | Image                                      | Version |
 |-----------------|--------------------------------------------|---------|
