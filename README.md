@@ -24,5 +24,5 @@ Some functionality like certificates, certain config maps and network policies h
 | solr            | wodby/solr                                 | 0.1.0   |
 | tailscale       | tailscale/tailscale                        | 0.1.0   |
 | valkey          | wodby/valkey                               | 0.1.0   |
-| varnish         | wodby/varnish                              | 0.2.0   |
+| vinyl           | wodby/vinyl                                | 0.1.0   |
 | zookeeper       | wodby/zookeeper                            | 0.1.0   |

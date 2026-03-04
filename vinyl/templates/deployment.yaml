@@ -1,0 +1,181 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- if .Values.updateStrategy }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
+  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
+      annotations:
+        {{- if .Values.podAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.metrics.enabled .Values.metrics.podAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.metrics.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.serverBlock (not .Values.existingServerBlockConfigmap) }}
+        checksum/server-block-configuration: {{ include (print $.Template.BasePath "/server-block-configmap.yaml") . | sha256sum }}
+        {{- end }}
+    spec:
+      {{- include "vinyl.imagePullSecrets" . | nindent 6 }}
+      shareProcessNamespace: {{ .Values.sidecarSingleProcessNamespace }}
+      serviceAccountName: {{ template "vinyl.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      hostIPC: {{ .Values.hostIPC }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.podSecurityContext "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}      
+      containers:
+        - name: vinyl
+          image: {{ include "vinyl.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.containerSecurityContext "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.diagnosticMode.enabled }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
+          {{- else if .Values.command }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.diagnosticMode.enabled }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.args "context" $) | nindent 12 }}
+          {{- else if .Values.args }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.extraEnvVars }}
+          env:
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          envFrom:
+            {{- if .Values.extraEnvVarsCM }}
+            - configMapRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsCM "context" $) }}
+            {{- end }}
+            {{- if .Values.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsSecret "context" $) }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 6081
+            - name: admin
+              containerPort: 6082
+            {{- if .Values.extraContainerPorts }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraContainerPorts "context" $) | nindent 12 }}
+            {{- end }}
+          {{- if not .Values.diagnosticMode.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 80
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- else if ne .Values.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.resourcesPreset) | nindent 12 }}
+          {{- end }}
+        {{- if .Values.metrics.enabled }}
+        - name: metrics
+          image: {{ include "vinyl.metrics.image" . }}
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
+          {{- if .Values.metrics.securityContext.enabled }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.metrics.securityContext "context" $) | nindent 12 }}
+          {{- end }}
+          command:
+            - exporter
+          args:
+            - --vinyl.scrape-uri
+            - {{ printf "http://127.0.0.1:%d/status" (int (default .Values.containerPorts.http .Values.metrics.port)) | quote }}
+            - --web.listen-address
+            - {{ printf ":%d" (int .Values.metrics.containerPorts.metrics) | quote }}
+            {{- if .Values.metrics.extraArgs }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.metrics.extraArgs "context" $ ) | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.containerPorts.metrics }}
+          livenessProbe:
+            http:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          readinessProbe:
+            http:
+              path: /.vchealthz
+              port: 6081
+            initialDelaySeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
+            periodSeconds: 30
+          {{- if .Values.metrics.resources }}
+          resources: {{- toYaml .Values.metrics.resources | nindent 12 }}
+          {{- else if ne .Values.metrics.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.metrics.resourcesPreset) | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" $) | nindent 8 }}
+        {{- end }}
