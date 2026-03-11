@@ -70,7 +70,7 @@ readinessProbe:
       - health
   initialDelaySeconds: 5
   failureThreshold: 2
-  timeoutSeconds: 5
+  timeoutSeconds: 10
   periodSeconds: 5
 
 livenessProbe:
@@ -79,7 +79,7 @@ livenessProbe:
       - health
   initialDelaySeconds: 80
   failureThreshold: 2
-  timeoutSeconds: 5
+  timeoutSeconds: 10
   periodSeconds: 300
 
 podAnnotations: { }
