@@ -129,10 +129,10 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
-volumes: []
+extraVolumes: []
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
+extraVolumeMounts: []
 
 nodeSelector: {}
 

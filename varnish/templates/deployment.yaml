@@ -134,6 +134,12 @@ spec:
           {{- else if ne .Values.resourcesPreset "none" }}
           resources: {{- include "common.resources.preset" (dict "type" .Values.resourcesPreset) | nindent 12 }}
           {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- if .Values.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
+          {{- end }}
         {{- if .Values.metrics.enabled }}
         - name: metrics
           image: {{ include "varnish.metrics.image" . }}
@@ -179,3 +185,9 @@ spec:
         {{- if .Values.sidecars }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" $) | nindent 8 }}
         {{- end }}
+      {{- if .Values.extraVolumes }}
+      volumes:
+        {{- if .Values.extraVolumes }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
+      {{- end }}
