@@ -292,8 +292,11 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
-        {{- $claimLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.persistence.labels .Values.commonLabels ) "context" . ) }}
-        labels: {{- include "common.tplvalues.render" ( dict "customLabels" $claimLabels "context" $) | nindent 10 }}
+        {{- $claimLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.persistence.labels .Values.commonLabels ) "context" . ) | fromYaml }}
+        labels:
+          {{- if $claimLabels }}
+          {{- toYaml $claimLabels | nindent 10 }}
+          {{- end }}
           app.kubernetes.io/component: primary
         {{- if .Values.primary.persistence.annotations }}
         annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.primary.persistence.annotations "context" $ ) | nindent 10 }}

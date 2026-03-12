@@ -34,7 +34,7 @@ spec:
       containers:
         - name: nfs
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: nfs
               containerPort: 2049
@@ -92,7 +92,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            {{- toYaml .Values.envVars | nindent 12 }}
+            {{- with .Values.envVars }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: data
               mountPath: /export
