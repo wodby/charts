@@ -34,7 +34,7 @@ nodeAffinityPreset:
 affinity: {}
 
 dataPersistence:
-  enabled: true
+  enabled: false
   existingClaim: ""
   storageClass: ""
   labels: {}
@@ -45,7 +45,7 @@ dataPersistence:
   selector: {}
 
 certPersistence:
-  enabled: true
+  enabled: false
   existingClaim: ""
   storageClass: ""
   labels: {}
