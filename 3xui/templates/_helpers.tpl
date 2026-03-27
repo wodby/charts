@@ -29,6 +29,20 @@ Create a default fully qualified app name.
 {{- end }}
 
 {{/*
+Create a DNS-1035 safe service name.
+*/}}
+{{- define "3xui.serviceName" -}}
+{{- $name := include "3xui.fullname" . -}}
+{{- if regexMatch "^[a-z]" $name -}}
+{{- $name -}}
+{{- else if eq $name "3xui" -}}
+xui
+{{- else -}}
+{{- printf "x-%s" $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "3xui.chart" -}}
