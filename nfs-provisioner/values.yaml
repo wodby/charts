@@ -145,3 +145,7 @@ tolerations: []
 affinity: {}
 
 envVars: []
+
+extraVolumes: []
+
+extraVolumeMounts: []

@@ -2,10 +2,11 @@
 
 These charts are designed to be used for deployment with Wodby [services](https://github.com/wodby/services) and may not be generic enough to be used fully independently.
 
-Some functionality like certificates, certain config maps and network policies handled directly by Wodby without helm manifests.
+Some functionality like certificates, certain config maps and network policies are handled directly by Wodby without helm manifests.
 
 | Chart           | Image                                      | Version |
 |-----------------|--------------------------------------------|---------|
+| 3xui            | ghcr.io/mhsanaei/3x-ui                     | 0.1.0   |
 | common          |                                            | 1.0.0   |
 | gotenberg       | gotenberg/gotenberg                        | 0.1.0   |
 | httpd           | wodby/apache                               | 0.2.0   |

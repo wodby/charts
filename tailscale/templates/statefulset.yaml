@@ -77,6 +77,10 @@ spec:
               mountPath: /etc/tailscale
               readOnly: true
             {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
+      {{- if or (and .Values.persistence.enabled .Values.persistence.existingClaim) (not .Values.persistence.enabled) (and .Values.serve.host .Values.serve.namespace .Values.serve.port (or (eq .Values.serve.protocol "http") (eq .Values.serve.protocol "tcp"))) .Values.extraVolumes }}
       volumes:
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: ts-state
@@ -94,6 +98,10 @@ spec:
               - key: serve.json
                 path: serve.json
   {{- end }}
+        {{- if .Values.extraVolumes }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
