@@ -1,0 +1,10 @@
+apiVersion: v2
+name: 3xui
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "2.8.5"
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x

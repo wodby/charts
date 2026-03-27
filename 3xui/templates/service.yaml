@@ -1,0 +1,28 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "3xui.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "3xui.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.panelPort }}
+      targetPort: panel
+      protocol: TCP
+      name: panel
+    {{- range .Values.extraPorts }}
+    - port: {{ default .containerPort .servicePort }}
+      targetPort: {{ .name }}
+      protocol: {{ default "TCP" .protocol }}
+      name: {{ .name }}
+    {{- end }}
+  selector:
+    {{- include "3xui.selectorLabels" . | nindent 4 }}
+{{- end }}

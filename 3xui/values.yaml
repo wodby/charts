@@ -1,0 +1,126 @@
+# Default values for 3xui.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+revisionHistoryLimit: 10
+podManagementPolicy: OrderedReady
+
+commonLabels: {}
+commonAnnotations: {}
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: ghcr.io
+  repository: mhsanaei/3x-ui
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  digest: ""
+  pullSecrets: []
+
+updateStrategy:
+  type: RollingUpdate
+
+podAffinityPreset: ""
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: ""
+  key: ""
+  values: []
+affinity: {}
+
+dataPersistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  selector: {}
+
+certPersistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  selector: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+hostNetwork: false
+dnsPolicy: ""
+
+service:
+  enabled: true
+  type: ClusterIP
+  panelPort: 2053
+  annotations: {}
+
+resources: {}
+
+env:
+  xrayVmessAeadForced: "false"
+  xuiEnableFail2ban: "true"
+
+envVars: []
+command: []
+args: []
+
+extraPorts: []
+# - name: vmess
+#   containerPort: 8443
+#   servicePort: 8443
+#   protocol: TCP
+
+livenessProbe:
+  tcpSocket:
+    port: panel
+  initialDelaySeconds: 20
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  tcpSocket:
+    port: panel
+  initialDelaySeconds: 10
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 10
+
+# Additional volumes on the output StatefulSet definition.
+extraVolumes: []
+
+# Additional volumeMounts on the output StatefulSet definition.
+extraVolumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+terminationGracePeriodSeconds: 30

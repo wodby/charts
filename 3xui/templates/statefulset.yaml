@@ -1,0 +1,194 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "3xui.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" (dict "customLabels" .Values.commonLabels "context" $) | nindent 4 }}
+    app.kubernetes.io/component: 3xui
+    role: 3xui
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" (dict "value" .Values.commonAnnotations "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  {{- $podLabels := include "common.tplvalues.merge" (dict "values" (list .Values.podLabels .Values.commonLabels) "context" .) }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" (dict "customLabels" $podLabels "context" $) | nindent 6 }}
+      app.kubernetes.io/component: 3xui
+  serviceName: {{ include "3xui.fullname" . }}
+  {{- if .Values.updateStrategy }}
+  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels: {{- include "common.labels.standard" (dict "customLabels" $podLabels "context" $) | nindent 8 }}
+        app.kubernetes.io/component: 3xui
+    spec:
+      {{- include "3xui.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "3xui.serviceAccountName" . }}
+      {{- if .Values.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: {{ default "ClusterFirstWithHostNet" .Values.dnsPolicy }}
+      {{- else if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: 3xui
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "3xui.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          tty: true
+          {{- if .Values.command }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
+          {{- end }}
+          env:
+            - name: XRAY_VMESS_AEAD_FORCED
+              value: {{ .Values.env.xrayVmessAeadForced | quote }}
+            - name: XUI_ENABLE_FAIL2BAN
+              value: {{ .Values.env.xuiEnableFail2ban | quote }}
+            {{- if .Values.envVars }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: panel
+              containerPort: {{ .Values.service.panelPort }}
+              protocol: TCP
+            {{- range .Values.extraPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.readinessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.livenessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /etc/x-ui
+            - name: certs
+              mountPath: /root/cert
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        {{- if and .Values.dataPersistence.enabled .Values.dataPersistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.dataPersistence.existingClaim . }}
+        {{- else if not .Values.dataPersistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+        {{- if and .Values.certPersistence.enabled .Values.certPersistence.existingClaim }}
+        - name: certs
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.certPersistence.existingClaim . }}
+        {{- else if not .Values.certPersistence.enabled }}
+        - name: certs
+          emptyDir: {}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+  {{- if and .Values.dataPersistence.enabled (not .Values.dataPersistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        {{- if .Values.dataPersistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.dataPersistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.dataPersistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.dataPersistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.dataPersistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.dataPersistence.size | quote }}
+        {{ include "common.storage.class" (dict "persistence" .Values.dataPersistence "global" .Values.global) }}
+        {{- if .Values.dataPersistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.dataPersistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+    {{- if and .Values.certPersistence.enabled (not .Values.certPersistence.existingClaim) }}
+    - metadata:
+        name: certs
+        {{- if .Values.certPersistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.certPersistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.certPersistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.certPersistence.size | quote }}
+        {{ include "common.storage.class" (dict "persistence" .Values.certPersistence "global" .Values.global) }}
+        {{- if .Values.certPersistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+    {{- end }}
+  {{- else if and .Values.certPersistence.enabled (not .Values.certPersistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: certs
+        {{- if .Values.certPersistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.certPersistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.certPersistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.certPersistence.size | quote }}
+        {{ include "common.storage.class" (dict "persistence" .Values.certPersistence "global" .Values.global) }}
+        {{- if .Values.certPersistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.certPersistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+  {{- end }}
