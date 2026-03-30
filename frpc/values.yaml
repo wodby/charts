@@ -1,0 +1,80 @@
+# Default values for frpc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: wodby/frp
+  tag: "0.65.0"
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+envVars: []
+extraVolumes: []
+extraVolumeMounts: []
+
+resources: {}
+#  limits:
+#    cpu: 600m
+#    memory: 512Mi
+#  requests:
+#    cpu: 600m
+#    memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}
+
+frpc:
+  name: ""
+  serverAddr: ""
+  serverPort: ""
+  oidcClientID: ""
+  oidcClientSecret: ""
+  oidcTokenEndpointURL: ""
+  customDomain: ""
+  httpUser: ""
+  httpPassword: ""
+  existingSecret: ""
+  apiPrefix: ""
+  location: ""
+
+verticalAutoscaling:
+  enabled: false
+  minAllowed: 50m
+
+podDisruptionBudget:
+  enabled: false
+  maxUnavailable: 1
+
+serviceAccount:
+  ## @param serviceAccount.create Enables ServiceAccount
+  ##
+  create: true
+  ## @param serviceAccount.name ServiceAccount name
+  ##
+  name: ""
+  ## @param serviceAccount.annotations Annotations to add to all deployed objects
+  ##
+  annotations: {}
+  ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
+  ##
+  automountServiceAccountToken: true

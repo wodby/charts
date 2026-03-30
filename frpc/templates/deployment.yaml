@@ -1,0 +1,105 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- include "frpc.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ template "frpc.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      containers:
+        - name: frpc
+          image: {{ include "frpc.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          args:
+            - frpc
+            - -c
+            - /etc/frpc.toml
+          env:
+            - name: FRPC_NAME
+              value: {{ .Values.frpc.name | quote }}
+            - name: FRPC_SERVER_ADDR
+              value: {{ .Values.frpc.serverAddr | quote }}
+            - name: FRPC_SERVER_PORT
+              value: {{ .Values.frpc.serverPort | quote }}
+            - name: FRPC_AUTH_METHOD
+              value: 'oidc'
+            - name: FRPC_LOCATION
+              value: {{ .Values.frpc.location | quote }}
+            - name: FRPC_LOCAL_PORT
+              value: '8001'
+            - name: FRPC_SET_AUTHORIZATION_BEARER_TOKEN
+              value: '1'
+            - name: FRPC_HTTP_USER
+              value: {{ .Values.frpc.httpUser | quote }}
+            - name: FRPC_HTTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "frpc.secretName" . }}
+                  key: FRPC_HTTP_PASSWORD
+            - name: FRPC_AUTH_OIDC_CLIENT_ID
+              value: {{ .Values.frpc.oidcClientID | quote }}
+            - name: FRPC_AUTH_OIDC_TOKEN_ENDPOINT_URL
+              value: {{ .Values.frpc.oidcTokenEndpointURL | quote }}
+            - name: FRPC_CUSTOM_DOMAIN
+              value: {{ .Values.frpc.customDomain | quote }}
+            - name: FRPC_AUTH_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "frpc.secretName" . }}
+                  key: FRPC_AUTH_OIDC_CLIENT_SECRET
+            {{- with .Values.envVars }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+            {{- end }}
+          {{- if .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+        - name: proxy
+          image: {{ include "frpc.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          env:
+            - name: KUBECTL_API_PREFIX
+              value: {{ .Values.frpc.apiPrefix | quote }}
+          command:
+            - kubectl
+            - proxy
+            - --accept-hosts=.*
+            - --disable-filter
+            - --address=127.0.0.1
+            - --api-prefix=$(KUBECTL_API_PREFIX)
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+      {{- if .Values.extraVolumes }}
+      volumes:
+        {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
