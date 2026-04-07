@@ -8,11 +8,12 @@ Some functionality like certificates, certain config maps and network policies a
 |-----------------|--------------------------------------------|---------|
 | 3xui            | ghcr.io/mhsanaei/3x-ui                     | 0.1.0   |
 | common          |                                            | 1.0.0   |
+| frpc            | wodby/frp                                  | 0.1.0   |
 | gotenberg       | gotenberg/gotenberg                        | 0.1.0   |
 | httpd           | wodby/apache                               | 0.2.0   |
 | mailpit         | axllent/mailpit                            | 0.2.0   |
 | mariadb         | wodby/mariadb                              | 0.2.0   |
-| nfs-provisioner | k8s.gcr.io/nfs-subdir-external-provisioner | 0.2.0   |
+| nfs-provisioner | k8s.gcr.io/nfs-subdir-external-provisioner | 0.3.1   |
 | nginx           | wodby/nginx                                | 0.2.0   |
 | node            | wodby/node                                 | 0.2.0   |
 | openclaw        | wodby/openclaw                             | 0.1.0   |
@@ -21,6 +22,7 @@ Some functionality like certificates, certain config maps and network policies a
 | postgres        | wodby/postgres                             | 0.2.0   |
 | python          | wodby/python                               | 0.1.0   |
 | redis           | wodby/redis                                | 0.1.0   |
+| rustdesk        | rustdesk/rustdesk-server                   | 0.1.0   |
 | ruby            | wodby/ruby                                 | 0.1.0   |
 | solr            | wodby/solr                                 | 0.1.0   |
 | tailscale       | tailscale/tailscale                        | 0.1.0   |
