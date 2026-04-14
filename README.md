@@ -12,15 +12,15 @@ Some functionality like certificates, certain config maps and network policies a
 | gotenberg       | gotenberg/gotenberg                         | 0.1.0   |
 | httpd           | wodby/apache                                | 0.2.0   |
 | mailpit         | axllent/mailpit                             | 0.2.0   |
-| mariadb         | wodby/mariadb                               | 0.2.0   |
+| mariadb         | wodby/mariadb                               | 0.2.1   |
 | mtproxy         | telegrammessenger/proxy                     | 0.1.0   |
-| nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.3.1   |
+| nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.3.2   |
 | nginx           | wodby/nginx                                 | 0.2.0   |
 | node            | wodby/node                                  | 0.2.0   |
 | openclaw        | wodby/openclaw                              | 0.1.0   |
 | opensmtpd       | wodby/opensmtpd                             | 0.3.0   |
 | php-fpm         | wodby/php                                   | 0.2.0   |
-| postgres        | wodby/postgres                              | 0.2.0   |
+| postgres        | wodby/postgres                              | 0.2.1   |
 | python          | wodby/python                                | 0.1.0   |
 | redis           | wodby/redis                                 | 0.1.0   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.1.0   |
@@ -28,5 +28,6 @@ Some functionality like certificates, certain config maps and network policies a
 | solr            | wodby/solr                                  | 0.1.0   |
 | tailscale       | tailscale/tailscale                         | 0.1.0   |
 | valkey          | wodby/valkey                                | 0.1.0   |
+| varnish         | wodby/varnish                               | 0.2.0   |
 | vinyl           | wodby/vinyl                                 | 0.1.0   |
 | zookeeper       | wodby/zookeeper                             | 0.1.0   |
