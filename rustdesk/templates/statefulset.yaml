@@ -1,0 +1,201 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rustdesk.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" (dict "customLabels" .Values.commonLabels "context" $) | nindent 4 }}
+    app.kubernetes.io/component: rustdesk
+    role: rustdesk
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" (dict "value" .Values.commonAnnotations "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  {{- $podLabels := include "common.tplvalues.merge" (dict "values" (list .Values.podLabels .Values.commonLabels) "context" .) }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" (dict "customLabels" $podLabels "context" $) | nindent 6 }}
+      app.kubernetes.io/component: rustdesk
+  serviceName: {{ include "rustdesk.headlessServiceName" . }}
+  {{- if .Values.updateStrategy }}
+  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+      labels: {{- include "common.labels.standard" (dict "customLabels" $podLabels "context" $) | nindent 8 }}
+        app.kubernetes.io/component: rustdesk
+    spec:
+      {{- include "rustdesk.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "rustdesk.serviceAccountName" . }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "customLabels" $podLabels "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: hbbr
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "rustdesk.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command.hbbr }}
+          command: {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- else }}
+          command:
+            - hbbr
+          {{- end }}
+          {{- if .Values.args.hbbr }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args.hbbr "context" $) | nindent 12 }}
+          {{- else if or .Values.hbbr.key .Values.hbbr.extraArgs }}
+          args:
+            {{- if .Values.hbbr.key }}
+            - -k
+            - {{ .Values.hbbr.key | quote }}
+            {{- end }}
+            {{- with .Values.hbbr.extraArgs }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.hbbr.envVars }}
+          env:
+            {{- include "common.tplvalues.render" (dict "value" .Values.hbbr.envVars "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: relay
+              containerPort: {{ .Values.services.hbbr.ports.relay.targetPort }}
+              protocol: TCP
+            {{- if .Values.services.hbbr.ports.web.enabled }}
+            - name: relay-web
+              containerPort: {{ .Values.services.hbbr.ports.web.targetPort }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.hbbr.readinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.hbbr.readinessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.hbbr.livenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.hbbr.livenessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.hbbr.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /root
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        - name: hbbs
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "rustdesk.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.command.hbbs }}
+          command: {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- else }}
+          command:
+            - hbbs
+          {{- end }}
+          {{- if .Values.args.hbbs }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args.hbbs "context" $) | nindent 12 }}
+          {{- else if or .Values.hbbs.relayAddress .Values.hbbs.key .Values.hbbs.extraArgs }}
+          args:
+            {{- if .Values.hbbs.relayAddress }}
+            - -r
+            - {{ .Values.hbbs.relayAddress | quote }}
+            {{- end }}
+            {{- if .Values.hbbs.key }}
+            - -k
+            - {{ .Values.hbbs.key | quote }}
+            {{- end }}
+            {{- with .Values.hbbs.extraArgs }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.hbbs.envVars }}
+          env:
+            {{- include "common.tplvalues.render" (dict "value" .Values.hbbs.envVars "context" $) | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: signal
+              containerPort: {{ .Values.services.hbbs.ports.signal.targetPort }}
+              protocol: TCP
+            - name: nat-tcp
+              containerPort: {{ .Values.services.hbbs.ports.natDiscovery.targetPort }}
+              protocol: TCP
+            - name: nat-udp
+              containerPort: {{ .Values.services.hbbs.ports.natDiscoveryUdp.targetPort }}
+              protocol: UDP
+            {{- if .Values.services.hbbs.ports.web.enabled }}
+            - name: web
+              containerPort: {{ .Values.services.hbbs.ports.web.targetPort }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.hbbs.readinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.hbbs.readinessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.hbbs.livenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.hbbs.livenessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.hbbs.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /root
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      {{- if or (and .Values.persistence.enabled .Values.persistence.existingClaim) (not .Values.persistence.enabled) .Values.extraVolumes }}
+      volumes:
+        {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.persistence.existingClaim . }}
+        {{- else if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+  {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        {{- if .Values.persistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.persistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
+        {{- if .Values.persistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+  {{- end }}

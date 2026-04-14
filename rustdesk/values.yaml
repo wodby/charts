@@ -1,0 +1,154 @@
+# Default values for rustdesk.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+revisionHistoryLimit: 10
+podManagementPolicy: OrderedReady
+
+commonLabels: {}
+commonAnnotations: {}
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: rustdesk/rustdesk-server
+  pullPolicy: IfNotPresent
+  tag: "1.1.15"
+  digest: ""
+  pullSecrets: []
+
+updateStrategy:
+  type: RollingUpdate
+
+podAffinityPreset: ""
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: ""
+  key: ""
+  values: []
+affinity: {}
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  selector: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+services:
+  headless:
+    annotations: {}
+  hbbs:
+    enabled: true
+    type: ClusterIP
+    annotations: {}
+    ports:
+      signal:
+        port: 21115
+        targetPort: 21115
+        protocol: TCP
+      natDiscovery:
+        port: 21116
+        targetPort: 21116
+        protocol: TCP
+      natDiscoveryUdp:
+        port: 21116
+        targetPort: 21116
+        protocol: UDP
+      web:
+        enabled: false
+        port: 21118
+        targetPort: 21118
+        protocol: TCP
+  hbbr:
+    enabled: true
+    type: ClusterIP
+    annotations: {}
+    ports:
+      relay:
+        port: 21117
+        targetPort: 21117
+        protocol: TCP
+      web:
+        enabled: false
+        port: 21119
+        targetPort: 21119
+        protocol: TCP
+
+hbbs:
+  relayAddress: ""
+  key: ""
+  envVars: []
+  extraArgs: []
+  resources: {}
+  livenessProbe:
+    tcpSocket:
+      port: signal
+    initialDelaySeconds: 10
+    failureThreshold: 3
+    timeoutSeconds: 5
+    periodSeconds: 30
+  readinessProbe:
+    tcpSocket:
+      port: signal
+    initialDelaySeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 5
+    periodSeconds: 10
+
+hbbr:
+  key: ""
+  envVars: []
+  extraArgs: []
+  resources: {}
+  livenessProbe:
+    tcpSocket:
+      port: relay
+    initialDelaySeconds: 10
+    failureThreshold: 3
+    timeoutSeconds: 5
+    periodSeconds: 30
+  readinessProbe:
+    tcpSocket:
+      port: relay
+    initialDelaySeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 5
+    periodSeconds: 10
+
+command: {}
+args: {}
+
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+terminationGracePeriodSeconds: 30

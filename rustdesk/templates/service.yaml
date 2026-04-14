@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rustdesk.headlessServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rustdesk.labels" . | nindent 4 }}
+  {{- with .Values.services.headless.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  ports:
+    - name: hbbs-signal
+      port: {{ .Values.services.hbbs.ports.signal.port }}
+      targetPort: signal
+      protocol: TCP
+  selector:
+    {{- include "rustdesk.selectorLabels" . | nindent 4 }}
+---
+{{- if .Values.services.hbbs.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rustdesk.hbbsServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rustdesk.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hbbs
+  {{- with .Values.services.hbbs.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.services.hbbs.type }}
+  ports:
+    - name: signal
+      port: {{ .Values.services.hbbs.ports.signal.port }}
+      targetPort: signal
+      protocol: {{ .Values.services.hbbs.ports.signal.protocol }}
+    - name: nat-tcp
+      port: {{ .Values.services.hbbs.ports.natDiscovery.port }}
+      targetPort: nat-tcp
+      protocol: {{ .Values.services.hbbs.ports.natDiscovery.protocol }}
+    - name: nat-udp
+      port: {{ .Values.services.hbbs.ports.natDiscoveryUdp.port }}
+      targetPort: nat-udp
+      protocol: {{ .Values.services.hbbs.ports.natDiscoveryUdp.protocol }}
+    {{- if .Values.services.hbbs.ports.web.enabled }}
+    - name: web
+      port: {{ .Values.services.hbbs.ports.web.port }}
+      targetPort: web
+      protocol: {{ .Values.services.hbbs.ports.web.protocol }}
+    {{- end }}
+  selector:
+    {{- include "rustdesk.selectorLabels" . | nindent 4 }}
+{{- end }}
+---
+{{- if .Values.services.hbbr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rustdesk.hbbrServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rustdesk.labels" . | nindent 4 }}
+    app.kubernetes.io/component: hbbr
+  {{- with .Values.services.hbbr.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.services.hbbr.type }}
+  ports:
+    - name: relay
+      port: {{ .Values.services.hbbr.ports.relay.port }}
+      targetPort: relay
+      protocol: {{ .Values.services.hbbr.ports.relay.protocol }}
+    {{- if .Values.services.hbbr.ports.web.enabled }}
+    - name: web
+      port: {{ .Values.services.hbbr.ports.web.port }}
+      targetPort: relay-web
+      protocol: {{ .Values.services.hbbr.ports.web.protocol }}
+    {{- end }}
+  selector:
+    {{- include "rustdesk.selectorLabels" . | nindent 4 }}
+{{- end }}
