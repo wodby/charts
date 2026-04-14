@@ -289,6 +289,9 @@ primary:
   ## @param primary.name Name of the primary database (eg primary, master, leader, ...)
   ##
   name: primary
+  ## @param primary.replicaCount Number of PostgreSQL primary replicas to deploy. `0` disables the primary StatefulSet and any value greater than `0` is normalized to `1`.
+  ##
+  replicaCount: 1
   ## @param primary.configuration PostgreSQL Primary main configuration to be injected as ConfigMap
   ## ref: https://www.postgresql.org/docs/current/static/runtime-config.html
   ##

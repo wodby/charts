@@ -177,6 +177,9 @@ primary:
   ## @param primary.name Name of the primary database (eg primary, master, leader, ...)
   ##
   name: primary
+  ## @param primary.replicaCount Number of MariaDB primary replicas to deploy. `0` disables the primary StatefulSet and any value greater than `0` is normalized to `1`.
+  ##
+  replicaCount: 1
   ## @param primary.command Override default container command on MariaDB Primary container(s) (useful when using custom images)
   ##
   command: []

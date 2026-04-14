@@ -9,7 +9,7 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  replicas: 1
+  replicas: {{ ternary 1 0 (gt (int .Values.primary.replicaCount) 0) }}
   revisionHistoryLimit: {{ .Values.primary.revisionHistoryLimit }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.podLabels .Values.commonLabels ) "context" . ) }}
   selector:

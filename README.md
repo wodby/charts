@@ -13,6 +13,7 @@ Some functionality like certificates, certain config maps and network policies a
 | httpd           | wodby/apache                                | 0.2.0   |
 | mailpit         | axllent/mailpit                             | 0.2.0   |
 | mariadb         | wodby/mariadb                               | 0.2.0   |
+| mtproxy         | telegrammessenger/proxy                     | 0.1.0   |
 | nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.3.1   |
 | nginx           | wodby/nginx                                 | 0.2.0   |
 | node            | wodby/node                                  | 0.2.0   |

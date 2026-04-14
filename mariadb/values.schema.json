@@ -68,6 +68,13 @@
       "title": "Primary replicas settings",
       "form": true,
       "properties": {
+        "replicaCount": {
+          "type": "integer",
+          "title": "Primary replicas",
+          "description": "0 disables the primary StatefulSet; positive values are normalized to 1",
+          "form": true,
+          "minimum": 0
+        },
         "persistence": {
           "type": "object",
           "title": "Persistence for primary replicas",
