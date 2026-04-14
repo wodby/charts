@@ -1,0 +1,8 @@
+MTProxy is deployed as the {{ include "mtproxy.fullname" . }} Service on port {{ .Values.service.port }}.
+
+This chart requires a fixed MTProxy secret source. Expose the Service publicly, then build the client link as:
+
+  tg://proxy?server=<public-address>&port={{ .Values.service.port }}&secret=<secret>
+
+If you expose MTProxy on a port other than 443, replace `port=443` in any log-generated links with {{ .Values.service.port }}.
+Register the proxy with @MTProxyBot if you want statistics or monetization.

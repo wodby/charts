@@ -1,0 +1,84 @@
+# Default values for mtproxy.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: telegrammessenger/proxy
+  pullPolicy: IfNotPresent
+  tag: "2.0beta"
+  digest: ""
+  pullSecrets: []
+
+updateStrategy:
+  type: RollingUpdate
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Existing secret with a required `secret` key and an optional `tag` key.
+existingSecret: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  annotations: {}
+  port: 443
+
+config:
+  # Required fixed MTProxy secrets, each as 32 hex characters. The official image accepts up to 16.
+  secrets: []
+  # Telegram proxy tag as 32 hex characters.
+  tag: ""
+  workers: 2
+  debug: false
+
+envVars: []
+command: []
+args: []
+
+livenessProbe:
+  tcpSocket:
+    port: proxy
+  initialDelaySeconds: 20
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  tcpSocket:
+    port: proxy
+  initialDelaySeconds: 5
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 10
+
+resources: {}
+
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+terminationGracePeriodSeconds: 30

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mtproxy
+description: A Helm chart for Telegram MTProxy
+type: application
+version: 0.1.0
+appVersion: "2.0beta"
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x
