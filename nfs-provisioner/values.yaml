@@ -64,7 +64,7 @@ persistence:
   ## of creating a new one. i.e. volume definition:
   ## persistentVolumeClaim:
   ##   claimName: {{ tpl .Values.persistence.existingClaim . }}
-  # existingClaim: "my-existing-pvc"
+  existingClaim: ""
 
   ## Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
