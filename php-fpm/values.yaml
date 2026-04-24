@@ -100,7 +100,7 @@ readinessProbe:
     - check-ready
     - -f
     - /usr/local/bin/actions.mk
-  initialDelaySeconds: 5
+  initialDelaySeconds: 15
   failureThreshold: 2
   timeoutSeconds: 3
   periodSeconds: 5
