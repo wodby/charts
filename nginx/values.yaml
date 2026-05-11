@@ -341,8 +341,14 @@ lifecycleHooks: {}
 ##
 startupProbe:
   enabled: false
+  exec:
+    command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
   initialDelaySeconds: 30
-  timeoutSeconds: 5
+  timeoutSeconds: 3
   periodSeconds: 10
   failureThreshold: 6
   successThreshold: 1
@@ -357,10 +363,16 @@ startupProbe:
 ##
 livenessProbe:
   enabled: true
-  initialDelaySeconds: 30
-  timeoutSeconds: 5
-  periodSeconds: 10
-  failureThreshold: 6
+  exec:
+    command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
+  initialDelaySeconds: 80
+  timeoutSeconds: 3
+  periodSeconds: 30
+  failureThreshold: 2
   successThreshold: 1
 ## NGINX containers' readiness probe.
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
@@ -373,12 +385,18 @@ livenessProbe:
 ##
 readinessProbe:
   enabled: true
+  exec:
+    command:
+      - make
+      - check-ready
+      - -f
+      - /usr/local/bin/actions.mk
   initialDelaySeconds: 5
   timeoutSeconds: 3
-  periodSeconds: 5
-  failureThreshold: 3
+  periodSeconds: 30
+  failureThreshold: 2
   successThreshold: 1
-## @param customStartupProbe Custom liveness probe for the Web component
+## @param customStartupProbe Custom startup probe for the Web component
 ##
 customStartupProbe: {}
 ## @param customLivenessProbe Override default liveness probe
