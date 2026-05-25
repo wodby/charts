@@ -421,6 +421,13 @@ primary:
   ## @param primary.readinessProbe.failureThreshold Failure threshold for readinessProbe
   ## @param primary.readinessProbe.successThreshold Success threshold for readinessProbe
   ##
+  readinessProbe:
+    enabled: false
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
 
   ## @param primary.customStartupProbe Override default startup probe for MariaDB primary containers
   ##
