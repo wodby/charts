@@ -1,0 +1,38 @@
+{{- if .Values.headlessService.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stateful.headlessServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stateful.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
+    {{- end }}
+  {{- with .Values.headlessService.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: {{ .Values.headlessService.publishNotReadyAddresses }}
+  ports:
+    {{- if .Values.headlessService.ports }}
+    {{- range .Values.headlessService.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ default .name .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+    {{- end }}
+    {{- else }}
+    {{- range .Values.containerPorts }}
+    - name: {{ .name }}
+      port: {{ default .containerPort .servicePort }}
+      targetPort: {{ .name }}
+      protocol: {{ default "TCP" .protocol }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "stateful.selectorLabels" . | nindent 4 }}
+{{- end }}
