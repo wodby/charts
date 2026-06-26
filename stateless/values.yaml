@@ -1,0 +1,87 @@
+# Default values for stateless.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "latest"
+  digest: ""
+  pullSecrets: []
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+containerName: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+containerPorts:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  clusterIP: ""
+  loadBalancerIP: ""
+  externalTrafficPolicy: ""
+  ports: []
+
+resources: {}
+
+envVars: []
+envFrom: []
+command: []
+args: []
+
+startupProbe: {}
+livenessProbe: {}
+readinessProbe: {}
+lifecycle: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+strategy: {}
+
+initContainers: []
+extraContainers: []
+
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30

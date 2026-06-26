@@ -1,0 +1,48 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stateless.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stateless.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- with .Values.service.clusterIP }}
+  clusterIP: {{ . }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ . }}
+  {{- end }}
+  ports:
+    {{- if .Values.service.ports }}
+    {{- range .Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ default .name .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+      {{- with .nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- else }}
+    {{- range .Values.containerPorts }}
+    - name: {{ .name }}
+      port: {{ default .containerPort .servicePort }}
+      targetPort: {{ .name }}
+      protocol: {{ default "TCP" .protocol }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "stateless.selectorLabels" . | nindent 4 }}
+{{- end }}

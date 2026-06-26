@@ -27,6 +27,7 @@ Some functionality like certificates, certain config maps and network policies a
 | ruby            | wodby/ruby                                  | 0.1.0   |
 | solr            | wodby/solr                                  | 0.1.0   |
 | stateful        | configurable                                | 0.1.0   |
+| stateless       | configurable                                | 0.1.0   |
 | tailscale       | tailscale/tailscale                         | 0.1.0   |
 | valkey          | wodby/valkey                                | 0.1.0   |
 | varnish         | wodby/varnish                               | 0.2.0   |
