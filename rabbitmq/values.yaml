@@ -1,0 +1,189 @@
+replicaCount: 1
+
+global:
+  imageRegistry: ""
+  defaultStorageClass: ""
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: wodby/rabbitmq
+  pullPolicy: IfNotPresent
+  tag: "4.2-0.1.1"
+  digest: ""
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+clusterDomain: cluster.local
+
+commonLabels: {}
+commonAnnotations: {}
+podLabels: {}
+podAnnotations: {}
+
+revisionHistoryLimit: 10
+podManagementPolicy: Parallel
+updateStrategy:
+  type: RollingUpdate
+terminationGracePeriodSeconds: 120
+
+podAffinityPreset: ""
+podAntiAffinityPreset: soft
+nodeAffinityPreset:
+  type: ""
+  key: ""
+  values: []
+affinity: {}
+nodeSelector: {}
+tolerations: []
+topologySpreadConstraints: []
+priorityClassName: ""
+schedulerName: ""
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: {}
+
+command: []
+args: []
+lifecycle: {}
+envVars: []
+envFrom: []
+initContainers: []
+sidecars: []
+extraVolumes: []
+extraVolumeMounts: []
+
+auth:
+  username: wodby
+  password: ""
+  existingPasswordSecret: ""
+  existingPasswordSecretKey: password
+  erlangCookie: ""
+  existingErlangSecret: ""
+  existingErlangSecretKey: erlang-cookie
+  vhost: /
+
+config:
+  channelMax: 2047
+  heartbeat: 60
+  collectStatisticsInterval: 5000
+  memoryHighWatermark: 0.4
+  diskFreeLimit: 50MB
+
+management:
+  enabled: true
+
+metrics:
+  enabled: true
+  path: /metrics
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    jobLabel: ""
+    labels: {}
+    annotations: {}
+    selector: {}
+    interval: ""
+    scrapeTimeout: ""
+    honorLabels: false
+    relabelings: []
+    metricRelabelings: []
+
+clustering:
+  name: ""
+  addressType: hostname
+  partitionHandling: autoheal
+  nodeCleanupInterval: 10
+  onlyLogWarning: true
+
+extraPlugins: []
+extraConfiguration: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+rbac:
+  create: true
+
+service:
+  type: ClusterIP
+  annotations: {}
+  labels: {}
+  clusterIP: ""
+  loadBalancerClass: ""
+  loadBalancerIP: ""
+  loadBalancerSourceRanges: []
+  externalTrafficPolicy: Cluster
+  sessionAffinity: ""
+  sessionAffinityConfig: {}
+  externalIPs: []
+  ports:
+    amqp: 5672
+    management: 15672
+    metrics: 15692
+    epmd: 4369
+    dist: 25672
+  nodePorts:
+    amqp: ""
+    management: ""
+    metrics: ""
+  headless:
+    annotations: {}
+    publishNotReadyAddresses: true
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+  hostname: ""
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  subPath: ""
+  storageClass: ""
+  labels: {}
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  selector: {}
+  mountPath: /var/lib/rabbitmq
+
+livenessProbe:
+  exec:
+    command:
+      - rabbitmq-diagnostics
+      - -q
+      - ping
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  periodSeconds: 30
+  failureThreshold: 6
+
+readinessProbe:
+  tcpSocket:
+    port: amqp
+  initialDelaySeconds: 10
+  timeoutSeconds: 5
+  periodSeconds: 10
+  failureThreshold: 6
+
+startupProbe:
+  tcpSocket:
+    port: amqp
+  initialDelaySeconds: 5
+  timeoutSeconds: 5
+  periodSeconds: 10
+  failureThreshold: 30

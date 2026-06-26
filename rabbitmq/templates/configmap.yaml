@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
+  labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+data:
+  20-chart.conf: |-
+    {{- if gt (int .Values.replicaCount) 1 }}
+    cluster_name = {{ default (include "common.names.fullname" .) .Values.clustering.name }}
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.address_type = {{ .Values.clustering.addressType }}
+    cluster_formation.k8s.service_name = {{ include "rabbitmq.headlessServiceName" . }}
+    cluster_formation.k8s.hostname_suffix = .{{ include "rabbitmq.headlessServiceName" . }}.{{ include "common.names.namespace" . }}.svc.{{ .Values.clusterDomain }}
+    cluster_formation.node_cleanup.interval = {{ .Values.clustering.nodeCleanupInterval }}
+    cluster_formation.node_cleanup.only_log_warning = {{ ternary "true" "false" .Values.clustering.onlyLogWarning }}
+    cluster_partition_handling = {{ .Values.clustering.partitionHandling }}
+    {{- end }}
+    {{- if .Values.management.enabled }}
+    management.tcp.port = {{ .Values.service.ports.management }}
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    prometheus.tcp.port = {{ .Values.service.ports.metrics }}
+    {{- end }}
+  {{- if .Values.extraConfiguration }}
+  99-extra.conf: |-
+    {{- include "common.tplvalues.render" (dict "value" .Values.extraConfiguration "context" $) | nindent 4 }}
+  {{- end }}

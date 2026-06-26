@@ -22,6 +22,7 @@ Some functionality like certificates, certain config maps and network policies a
 | php-fpm         | wodby/php                                   | 0.2.0   |
 | postgres        | wodby/postgres                              | 0.2.1   |
 | python          | wodby/python                                | 0.1.0   |
+| rabbitmq        | wodby/rabbitmq                              | 0.2.0   |
 | redis           | wodby/redis                                 | 0.1.0   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.1.0   |
 | ruby            | wodby/ruby                                  | 0.1.0   |

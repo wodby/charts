@@ -1,0 +1,12 @@
+apiVersion: v2
+name: rabbitmq
+description: RabbitMQ chart for Wodby RabbitMQ images.
+type: application
+version: 0.2.0
+appVersion: 4.2.6
+keywords:
+  - rabbitmq
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/wodby
+    version: 1.x.x
