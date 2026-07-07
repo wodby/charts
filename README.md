@@ -9,6 +9,7 @@ Some functionality like certificates, certain config maps and network policies a
 | 3xui            | ghcr.io/mhsanaei/3x-ui                      | 0.1.0   |
 | common          |                                             | 1.0.0   |
 | frpc            | wodby/frp                                   | 0.1.1   |
+| go              | wodby/go                                   | 0.1.0   |
 | gotenberg       | gotenberg/gotenberg                         | 0.1.0   |
 | httpd           | wodby/apache                                | 0.2.0   |
 | mailpit         | axllent/mailpit                             | 0.2.0   |
