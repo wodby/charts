@@ -1,0 +1,10 @@
+apiVersion: v2
+name: prometheus
+description: Prometheus server chart for Wodby services
+type: application
+version: 0.1.0
+appVersion: "3.13.0"
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x

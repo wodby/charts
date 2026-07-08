@@ -22,6 +22,7 @@ Some functionality like certificates, certain config maps and network policies a
 | opensmtpd       | wodby/opensmtpd                             | 0.3.0   |
 | php-fpm         | wodby/php                                   | 0.2.0   |
 | postgres        | wodby/postgres                              | 0.2.1   |
+| prometheus      | wodby/prometheus                            | 0.1.0   |
 | python          | wodby/python                                | 0.1.0   |
 | rabbitmq        | wodby/rabbitmq                              | 0.2.0   |
 | redis           | wodby/redis                                 | 0.1.0   |

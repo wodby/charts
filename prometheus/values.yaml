@@ -1,0 +1,103 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+podManagementPolicy: OrderedReady
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: wodby/prometheus
+  pullPolicy: IfNotPresent
+  tag: "3.13"
+  digest: ""
+  pullSecrets: []
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 9090
+  annotations: {}
+
+persistence:
+  enabled: false
+  existingClaim: ""
+  subPath: ""
+  storageClass: ""
+  labels: {}
+  annotations: {}
+  accessModes:
+  - ReadWriteOnce
+  size: 10Gi
+  selector: {}
+
+config:
+  enabled: true
+  prometheusYml: |
+    global:
+      scrape_interval: '{{ getenv "PROM_SCRAPE_INTERVAL" "15s" }}'
+      scrape_timeout: '{{ getenv "PROM_SCRAPE_TIMEOUT" "10s" }}'
+      evaluation_interval: '{{ getenv "PROM_EVALUATION_INTERVAL" "15s" }}'
+
+    scrape_configs:
+    - job_name: prometheus
+      static_configs:
+      - targets:
+        - '{{ getenv "PROM_SCRAPE_CONFIGS_STATIC_CONFIGS_TARGET" "localhost:9090" }}'
+
+resources: {}
+
+envVars: []
+command: []
+args: []
+
+startupProbe: {}
+livenessProbe:
+  httpGet:
+    path: /-/healthy
+    port: prometheus
+  initialDelaySeconds: 30
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 30
+readinessProbe:
+  httpGet:
+    path: /-/ready
+    port: prometheus
+  initialDelaySeconds: 5
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 10
+
+updateStrategy:
+  type: RollingUpdate
+
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30
