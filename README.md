@@ -24,7 +24,7 @@ Some functionality like certificates, certain config maps and network policies a
 | postgres        | wodby/postgres                              | 0.2.1   |
 | prometheus      | wodby/prometheus                            | 0.1.0   |
 | python          | wodby/python                                | 0.1.0   |
-| rabbitmq        | wodby/rabbitmq                              | 0.2.0   |
+| rabbitmq        | wodby/rabbitmq                              | 0.2.1   |
 | redis           | wodby/redis                                 | 0.1.0   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.1.0   |
 | ruby            | wodby/ruby                                  | 0.1.0   |

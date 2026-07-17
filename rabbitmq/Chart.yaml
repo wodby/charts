@@ -2,8 +2,8 @@ apiVersion: v2
 name: rabbitmq
 description: RabbitMQ chart for Wodby RabbitMQ images.
 type: application
-version: 0.2.0
-appVersion: 4.2.6
+version: 0.2.1
+appVersion: 4.3.2
 keywords:
   - rabbitmq
 dependencies:
