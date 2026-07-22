@@ -31,6 +31,12 @@ spec:
             - frpc
             - -c
             - /etc/frpc.toml
+          {{- if .Values.frpc.egressProxyExistingSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.frpc.egressProxyExistingSecret | quote }}
+                optional: true
+          {{- end }}
           env:
             - name: FRPC_NAME
               value: {{ .Values.frpc.name | quote }}

@@ -10,7 +10,7 @@ global:
 image:
   registry: docker.io
   repository: wodby/frp
-  tag: "0.69.1"
+  tag: "0.69-0.2.0"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -54,6 +54,7 @@ frpc:
   httpUser: ""
   httpPassword: ""
   existingSecret: ""
+  egressProxyExistingSecret: ""
   apiPrefix: ""
   location: ""
 
