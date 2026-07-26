@@ -63,9 +63,19 @@ spec:
           {{- if .Values.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
+          {{- $saveToDiskConfigured := false }}
+          {{- range .Values.envVars }}
+          {{- if eq .name "REDIS_SAVE_TO_DISK" }}
+          {{- $saveToDiskConfigured = true }}
+          {{- end }}
+          {{- end }}
           env:
             - name: WODBY
               value: '1'
+            {{- if and .Values.persistence.enabled (not $saveToDiskConfigured) }}
+            - name: REDIS_SAVE_TO_DISK
+              value: '1'
+            {{- end }}
             {{- if .Values.envVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
             {{- end }}
