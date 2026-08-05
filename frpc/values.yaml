@@ -10,7 +10,7 @@ global:
 image:
   registry: docker.io
   repository: wodby/frp
-  tag: "0.69-0.2.0"
+  tag: "0.69-0.2.1"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -78,4 +78,4 @@ serviceAccount:
   annotations: {}
   ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
   ##
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false

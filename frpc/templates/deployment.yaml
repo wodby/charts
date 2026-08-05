@@ -22,7 +22,7 @@ spec:
     spec:
       {{- include "frpc.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ template "frpc.serviceAccountName" . }}
-      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      automountServiceAccountToken: false
       containers:
         - name: frpc
           image: {{ include "frpc.image" . }}
@@ -50,7 +50,9 @@ spec:
               value: {{ .Values.frpc.location | quote }}
             - name: FRPC_LOCAL_PORT
               value: '8001'
-            - name: FRPC_SET_AUTHORIZATION_BEARER_TOKEN
+            # FRPS consumes HTTP Basic auth; kubectl proxy must receive an empty
+            # Authorization header so client-go can add its rotating token.
+            - name: FRPC_CLEAR_AUTHORIZATION_HEADER
               value: '1'
             - name: FRPC_HTTP_USER
               value: {{ .Values.frpc.httpUser | quote }}
@@ -83,6 +85,11 @@ spec:
         - name: proxy
           image: {{ include "frpc.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          # Keep the cluster-admin token out of the FRPC container.
+          volumeMounts:
+            - name: kube-api-access
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
           env:
             - name: KUBECTL_API_PREFIX
               value: {{ .Values.frpc.apiPrefix | quote }}
@@ -96,10 +103,28 @@ spec:
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
-      {{- if .Values.extraVolumes }}
       volumes:
+        - name: kube-api-access
+          projected:
+            defaultMode: 420
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+        {{- if .Values.extraVolumes }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- if .Values.affinity }}
       affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
       {{- end }}
