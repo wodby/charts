@@ -31,7 +31,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | postgres        | wodby/postgres                              | 0.2.1   |
 | prometheus      | wodby/prometheus                            | 0.1.0   |
 | python          | wodby/python                                | 0.1.2   |
-| rabbitmq        | wodby/rabbitmq                              | 0.2.1   |
+| rabbitmq        | wodby/rabbitmq                              | 0.2.2   |
 | redis           | wodby/redis                                 | 0.1.2   |
 | ruby            | wodby/ruby                                  | 0.1.2   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.1.0   |

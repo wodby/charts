@@ -9,7 +9,7 @@ image:
   registry: docker.io
   repository: wodby/rabbitmq
   pullPolicy: IfNotPresent
-  tag: "4.3-0.2.0"
+  tag: "4.3-0.2.3"
   digest: ""
   pullSecrets: []
 

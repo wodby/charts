@@ -2,11 +2,17 @@ apiVersion: v2
 name: rabbitmq
 description: RabbitMQ chart for Wodby RabbitMQ images.
 type: application
-version: 0.2.1
-appVersion: 4.3.2
+version: 0.2.2
+appVersion: 4.3.4
 keywords:
   - rabbitmq
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
+annotations:
+  artifacthub.io/changes: |
+    - kind: fixed
+      description: Allow RabbitMQ to initialize chart-selected plugins in the mounted configuration directory
+    - kind: changed
+      description: Update the default RabbitMQ image to 4.3-0.2.3
