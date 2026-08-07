@@ -20,7 +20,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | gotenberg       | gotenberg/gotenberg                         | 0.1.2   |
 | httpd           | wodby/apache                                | 0.2.1   |
 | mailpit         | axllent/mailpit                             | 0.2.1   |
-| mariadb         | wodby/mariadb                               | 0.2.1   |
+| mariadb         | wodby/mariadb                               | 0.2.2   |
 | mtproxy         | telegrammessenger/proxy                     | 0.1.1   |
 | nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.3.2   |
 | nginx           | wodby/nginx                                 | 0.2.2   |
@@ -32,14 +32,14 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | prometheus      | wodby/prometheus                            | 0.1.0   |
 | python          | wodby/python                                | 0.1.2   |
 | rabbitmq        | wodby/rabbitmq                              | 0.2.2   |
-| redis           | wodby/redis                                 | 0.1.2   |
+| redis           | wodby/redis                                 | 0.1.3   |
 | ruby            | wodby/ruby                                  | 0.1.2   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.1.0   |
-| solr            | wodby/solr                                  | 0.1.1   |
+| solr            | wodby/solr                                  | 0.1.2   |
 | stateful        | configurable                                | 0.1.0   |
 | stateless       | configurable                                | 0.1.1   |
 | tailscale       | tailscale/tailscale                         | 0.1.0   |
-| valkey          | wodby/valkey                                | 0.1.2   |
+| valkey          | wodby/valkey                                | 0.1.3   |
 | varnish         | wodby/varnish                               | 0.2.1   |
 | vinyl           | wodby/vinyl                                 | 0.1.1   |
 | zookeeper       | wodby/zookeeper                             | 0.1.0   |

@@ -64,8 +64,6 @@ spec:
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
           env:
-            - name: WODBY
-              value: '1'
             {{- if .Values.envVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.envVars "context" $) | nindent 12 }}
             {{- end }}
