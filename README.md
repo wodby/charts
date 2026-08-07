@@ -21,6 +21,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | httpd           | wodby/apache                                | 0.2.1   |
 | mailpit         | axllent/mailpit                             | 0.2.1   |
 | mariadb         | wodby/mariadb                               | 0.2.2   |
+| memcached       | wodby/memcached                             | 0.1.0   |
 | mtproxy         | telegrammessenger/proxy                     | 0.1.1   |
 | nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.3.2   |
 | nginx           | wodby/nginx                                 | 0.2.2   |
