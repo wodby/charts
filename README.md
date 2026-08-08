@@ -14,7 +14,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | Chart           | Image                                       | Version |
 | --------------- | ------------------------------------------- | ------- |
 | 3xui            | ghcr.io/mhsanaei/3x-ui                      | 0.1.0   |
-| adminer         | wodby/adminer                               | 0.1.0   |
+| adminer         | wodby/adminer                               | 0.2.0   |
 | common          |                                             | 1.0.0   |
 | frpc            | wodby/frp                                   | 0.2.1   |
 | go              | wodby/go                                    | 0.1.2   |
