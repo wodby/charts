@@ -1,0 +1,23 @@
+{{- if .Values.server.enabled -}}
+{{- $connectionParameters := dict "sslmode" .Values.server.sslMode -}}
+{{- $server := dict
+  "Name" .Values.server.name
+  "Group" .Values.server.group
+  "Host" .Values.server.host
+  "Port" (int .Values.server.port)
+  "Username" .Values.server.username
+  "MaintenanceDB" .Values.server.maintenanceDatabase
+  "SSLMode" .Values.server.sslMode
+  "ConnectionParameters" $connectionParameters
+-}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgadmin.fullname" . }}-servers
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pgadmin.labels" . | nindent 4 }}
+data:
+  servers.json: |
+    {{ dict "Servers" (dict "1" $server) | toPrettyJson | nindent 4 }}
+{{- end }}

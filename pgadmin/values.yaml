@@ -1,0 +1,138 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: dpage/pgadmin4
+  pullPolicy: IfNotPresent
+  tag: "9.17"
+  digest: ""
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+containerName: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 5050
+  runAsGroup: 5050
+  fsGroup: 5050
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  clusterIP: ""
+  loadBalancerIP: ""
+  externalTrafficPolicy: ""
+  ports: []
+
+admin:
+  email: pgadmin@wodby.com
+  password: ""
+  existingSecret: ""
+  passwordKey: admin-password
+
+server:
+  enabled: false
+  name: PostgreSQL
+  group: Wodby
+  host: ""
+  port: 5432
+  username: ""
+  maintenanceDatabase: postgres
+  sslMode: prefer
+  replaceOnStartup: true
+
+persistence:
+  enabled: false
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  annotations: {}
+  labels: {}
+
+resources: {}
+
+envVars: []
+envFrom: []
+command: []
+args: []
+
+startupProbe:
+  httpGet:
+    path: /misc/ping
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 2
+  failureThreshold: 60
+
+livenessProbe:
+  httpGet:
+    path: /misc/ping
+    port: http
+  initialDelaySeconds: 10
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /misc/ping
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 5
+  failureThreshold: 2
+
+lifecycle: {}
+
+# pgAdmin configuration migrations are forward-only and unsafe with an old and
+# new pod sharing the same configuration database during a rolling upgrade.
+strategy:
+  type: Recreate
+
+initContainers: []
+extraContainers: []
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30

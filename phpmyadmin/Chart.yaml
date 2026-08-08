@@ -1,0 +1,19 @@
+apiVersion: v2
+name: phpmyadmin
+description: phpMyAdmin chart for the official phpMyAdmin image.
+type: application
+version: 0.1.0
+appVersion: "5"
+keywords:
+  - phpmyadmin
+  - mysql
+  - mariadb
+  - database
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/wodby
+    version: 1.x.x
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Deploy phpMyAdmin 5 with cookie authentication on an unprivileged HTTP port

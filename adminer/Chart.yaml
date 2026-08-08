@@ -1,0 +1,17 @@
+apiVersion: v2
+name: adminer
+description: Adminer chart for the Wodby Adminer image.
+type: application
+version: 0.1.0
+appVersion: "5"
+keywords:
+  - adminer
+  - database
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/wodby
+    version: 1.x.x
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Deploy Adminer 5 as a lightweight database administration interface

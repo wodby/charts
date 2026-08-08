@@ -14,6 +14,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | Chart           | Image                                       | Version |
 | --------------- | ------------------------------------------- | ------- |
 | 3xui            | ghcr.io/mhsanaei/3x-ui                      | 0.1.0   |
+| adminer         | wodby/adminer                               | 0.1.0   |
 | common          |                                             | 1.0.0   |
 | frpc            | wodby/frp                                   | 0.2.1   |
 | go              | wodby/go                                    | 0.1.2   |
@@ -28,7 +29,9 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | node            | wodby/node                                  | 0.2.2   |
 | openclaw        | wodby/openclaw                              | 0.1.1   |
 | opensmtpd       | wodby/opensmtpd                             | 0.3.1   |
+| pgadmin         | dpage/pgadmin4                              | 0.1.0   |
 | php-fpm         | wodby/php                                   | 0.2.1   |
+| phpmyadmin      | phpmyadmin                                  | 0.1.0   |
 | postgres        | wodby/postgres                              | 0.2.1   |
 | prometheus      | wodby/prometheus                            | 0.1.0   |
 | python          | wodby/python                                | 0.1.2   |

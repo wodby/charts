@@ -1,0 +1,104 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: wodby/adminer
+  pullPolicy: IfNotPresent
+  tag: "5.5-5.1.2"
+  digest: ""
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+containerName: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+# The current Apache-based Wodby image starts as root and drops privileges in
+# Apache. Keep this compatible until the image has a dedicated non-root build.
+securityContext:
+  allowPrivilegeEscalation: false
+
+containerPorts:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  clusterIP: ""
+  loadBalancerIP: ""
+  externalTrafficPolicy: ""
+  ports: []
+
+resources: {}
+
+envVars: []
+envFrom: []
+command: []
+args: []
+
+startupProbe:
+  httpGet:
+    path: /
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 2
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 5
+  failureThreshold: 2
+
+lifecycle: {}
+
+# Keep only one login-session endpoint active during upgrades.
+strategy:
+  type: Recreate
+
+initContainers: []
+extraContainers: []
+extraVolumes: []
+extraVolumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30

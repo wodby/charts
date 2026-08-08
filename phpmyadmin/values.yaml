@@ -1,0 +1,110 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: phpmyadmin
+  pullPolicy: IfNotPresent
+  tag: "5.2.3"
+  digest: ""
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+containerName: ""
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+# The official Apache image starts as root and drops privileges in Apache.
+securityContext:
+  allowPrivilegeEscalation: false
+
+apachePort: 8080
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  clusterIP: ""
+  loadBalancerIP: ""
+  externalTrafficPolicy: ""
+  ports: []
+
+resources: {}
+
+envVars: []
+envFrom: []
+command: []
+args: []
+
+startupProbe:
+  httpGet:
+    path: /
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 2
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  timeoutSeconds: 3
+  periodSeconds: 5
+  failureThreshold: 2
+
+lifecycle: {}
+
+# Session files are local to the pod, so avoid overlapping old and new pods.
+strategy:
+  type: Recreate
+
+initContainers: []
+extraContainers: []
+
+extraVolumes:
+  - name: sessions
+    emptyDir: {}
+extraVolumeMounts:
+  - name: sessions
+    mountPath: /sessions
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+terminationGracePeriodSeconds: 30
