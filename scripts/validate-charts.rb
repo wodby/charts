@@ -10,6 +10,7 @@ IMAGE_PULL_SECRET_NAME = "wodby-conformance-image-pull-secret"
 WORKLOAD_KINDS = %w[Deployment StatefulSet DaemonSet].freeze
 
 CHART_VALUES = {
+  "frps" => ["existingSecret=wodby-conformance-existing-secret"],
   "mtproxy" => ["existingSecret=wodby-conformance-existing-secret"],
 }.freeze
 

@@ -1,0 +1,123 @@
+{{- include "frps.validateValues" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frps.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "frps.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- with .Values.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "frps.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "frps.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      automountServiceAccountToken: false
+      {{- include "frps.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: frps
+          image: {{ include "frps.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          args:
+            - frps
+            - -c
+            - /etc/frps.toml
+          env:
+            - name: FRPS_BIND_PORT
+              value: {{ .Values.service.ports.control | quote }}
+            - name: FRPS_VHOST_HTTP_PORT
+              value: {{ .Values.service.ports.proxyHttp | quote }}
+            - name: FRPS_WEB_SERVER_ADDR
+              value: {{ .Values.webServer.addr | quote }}
+            - name: FRPS_WEB_SERVER_PORT
+              value: {{ .Values.service.ports.dashboard | quote }}
+            - name: FRPS_WEB_SERVER_USER
+              value: {{ .Values.webServer.user | quote }}
+            - name: FRPS_WEB_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "frps.secretName" . }}
+                  key: web-server-password
+                  optional: false
+            - name: FRPS_AUTH_METHOD
+              value: token
+            - name: FRPS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "frps.secretName" . }}
+                  key: auth-token
+                  optional: false
+            - name: FRPS_AUTH_ADDITIONAL_SCOPES
+              value: {{ .Values.auth.additionalScopes | toJson | quote }}
+            - name: FRPS_LOG_LEVEL
+              value: {{ .Values.logLevel | quote }}
+            - name: FRPS_TLS_FORCE
+              value: {{ .Values.tlsForce | quote }}
+            {{- with .Values.envVars }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: control
+              containerPort: {{ .Values.service.ports.control }}
+              protocol: TCP
+            - name: proxy-http
+              containerPort: {{ .Values.service.ports.proxyHttp }}
+              protocol: TCP
+            - name: dashboard
+              containerPort: {{ .Values.service.ports.dashboard }}
+              protocol: TCP
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+      {{- with .Values.extraVolumes }}
+      volumes:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

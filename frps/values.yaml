@@ -1,0 +1,79 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+
+image:
+  registry: docker.io
+  repository: wodby/frp
+  pullPolicy: IfNotPresent
+  tag: "0.69-0.3.0"
+  digest: ""
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+commonLabels: {}
+commonAnnotations: {}
+podLabels: {}
+podAnnotations: {}
+
+updateStrategy:
+  type: Recreate
+
+# Use a Secret with the keys `auth-token` and `web-server-password` instead
+# of setting auth.token and webServer.password directly.
+existingSecret: ""
+
+auth:
+  token: ""
+  additionalScopes:
+    - HeartBeats
+    - NewWorkConns
+
+webServer:
+  addr: 0.0.0.0
+  user: admin
+  password: ""
+
+service:
+  type: ClusterIP
+  annotations: {}
+  ports:
+    control: 7000
+    proxyHttp: 8080
+    dashboard: 7500
+
+logLevel: info
+tlsForce: true
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: {}
+envVars: []
+extraVolumes: []
+extraVolumeMounts: []
+
+livenessProbe:
+  tcpSocket:
+    port: control
+  initialDelaySeconds: 10
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  tcpSocket:
+    port: control
+  initialDelaySeconds: 3
+  failureThreshold: 3
+  timeoutSeconds: 5
+  periodSeconds: 10
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+terminationGracePeriodSeconds: 30
