@@ -1,0 +1,18 @@
+apiVersion: v2
+name: distribution
+description: CNCF Distribution Registry chart for Wodby
+type: application
+version: 0.1.0
+appVersion: "3.1.1"
+keywords:
+- registry
+- oci
+- distribution
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial Distribution Registry chart using the Docker Official Image

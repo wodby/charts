@@ -1,0 +1,124 @@
+replicaCount: 1
+revisionHistoryLimit: 10
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+image:
+  registry: docker.io
+  repository: registry
+  pullPolicy: IfNotPresent
+  tag: "3.1.1"
+  digest: ""
+  pullSecrets: []
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+containerName: distribution
+
+commonLabels: {}
+commonAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+
+containerPorts:
+- name: http
+  containerPort: 5000
+  protocol: TCP
+- name: debug
+  containerPort: 5001
+  protocol: TCP
+
+service:
+  enabled: true
+  type: ClusterIP
+  annotations: {}
+  clusterIP: ""
+  ports:
+  - name: http
+    port: 5000
+    targetPort: http
+    protocol: TCP
+
+resources: {}
+envVars: []
+
+# Wodby stores secret environment values in this Kubernetes Secret. Mounting
+# it also lets the GCS driver consume a service-account JSON value as a file.
+existingEnvSecret: ""
+
+auth:
+  htpasswd:
+    enabled: false
+    username: admin
+    passwordKey: WODBY_REGISTRY_PASSWORD
+    helperImage:
+      registry: docker.io
+      repository: httpd
+      tag: "2.4-alpine"
+      pullPolicy: IfNotPresent
+  token:
+    rootCertBundle: ""
+
+persistence:
+  enabled: false
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+  - ReadWriteOnce
+  size: 20Gi
+  annotations: {}
+  labels: {}
+
+startupProbe:
+  httpGet:
+    path: /debug/health
+    port: debug
+  timeoutSeconds: 3
+  periodSeconds: 2
+  failureThreshold: 30
+livenessProbe:
+  httpGet:
+    path: /debug/health
+    port: debug
+  initialDelaySeconds: 10
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /debug/health
+    port: debug
+  timeoutSeconds: 3
+  periodSeconds: 5
+  failureThreshold: 2
+
+strategy:
+  type: Recreate
+
+extraVolumes: []
+extraVolumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+terminationGracePeriodSeconds: 30
