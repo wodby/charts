@@ -70,7 +70,7 @@ auth:
   htpasswd:
     enabled: false
     username: admin
-    passwordKey: WODBY_REGISTRY_PASSWORD
+    passwordKey: DISTRIBUTION_HTPASSWD_PASSWORD
     helperImage:
       registry: docker.io
       repository: httpd
