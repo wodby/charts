@@ -2,7 +2,7 @@ apiVersion: v2
 name: rabbitmq
 description: RabbitMQ chart for Wodby RabbitMQ images.
 type: application
-version: 0.2.2
+version: 0.3.0
 appVersion: 4.3.4
 keywords:
   - rabbitmq
@@ -12,7 +12,7 @@ dependencies:
     version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Allow RabbitMQ to initialize chart-selected plugins in the mounted configuration directory
+    - kind: added
+      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
     - kind: changed
-      description: Update the default RabbitMQ image to 4.3-0.2.3
+      description: Wait 10 seconds after readiness before continuing rolling updates

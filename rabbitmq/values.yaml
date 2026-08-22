@@ -187,3 +187,6 @@ startupProbe:
   timeoutSeconds: 5
   periodSeconds: 10
   failureThreshold: 30
+
+# Minimum time a ready pod must remain healthy before an update continues.
+minReadySeconds: 10

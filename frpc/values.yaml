@@ -79,3 +79,14 @@ serviceAccount:
   ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
   ##
   automountServiceAccountToken: false
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900
+
+# Deployment rollout strategy.
+strategy:
+  type: Recreate
+
+# Time allowed for the pod to terminate gracefully.
+terminationGracePeriodSeconds: 30

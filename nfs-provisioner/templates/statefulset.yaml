@@ -6,6 +6,11 @@ metadata:
   labels:
     {{- include "nfs-provisioner.labels" . | nindent 4 }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   replicas: {{ ternary 1 0 (gt (int .Values.replicaCount) 0) }}
   selector:
     matchLabels:
@@ -24,7 +29,7 @@ spec:
         {{- end }}
     spec:
       # NOTE: This is 10 seconds longer than the default nfs-provisioner --grace-period value of 90sec
-      terminationGracePeriodSeconds: 100
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       serviceAccountName: {{ include "nfs-provisioner.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

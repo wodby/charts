@@ -6,6 +6,11 @@ metadata:
   labels:
     {{- include "tailscale.labels" . | nindent 4 }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:

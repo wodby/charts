@@ -8,10 +8,12 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
-  {{- if .Values.updateStrategy }}
-  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- with (default .Values.strategy .Values.updateStrategy) }}
+  strategy: {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
   selector:
@@ -65,9 +67,7 @@ spec:
       {{- if .Values.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      {{- end }}      
       containers:
         - name: varnish
           image: {{ include "varnish.image" . }}

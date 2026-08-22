@@ -150,3 +150,13 @@ envVars: []
 extraVolumes: []
 
 extraVolumeMounts: []
+
+# Minimum time a ready pod must remain healthy before an update continues.
+minReadySeconds: 10
+
+# StatefulSet update strategy.
+updateStrategy:
+  type: RollingUpdate
+
+# NFS server shutdown can require additional time to release active exports.
+terminationGracePeriodSeconds: 100

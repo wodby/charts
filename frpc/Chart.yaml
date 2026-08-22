@@ -2,14 +2,12 @@ name: frpc
 apiVersion: v2
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Keep Kubernetes API authentication working when projected ServiceAccount tokens rotate
-    - kind: security
-      description: Restrict the Kubernetes API token mount to the kubectl proxy container
+    - kind: added
+      description: Expose consistent Deployment rollout timing and graceful shutdown settings
     - kind: changed
-      description: Update the default FRP image to 0.69-0.2.1
+      description: Wait 10 seconds after readiness before considering replacement pods available
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
-version: 0.2.1
+version: 0.3.0

@@ -15,7 +15,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.2
+version: 0.3.0
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before considering replacement pods available
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

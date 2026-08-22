@@ -20,8 +20,12 @@ commonAnnotations: {}
 podLabels: {}
 podAnnotations: {}
 
-updateStrategy:
+# Canonical Deployment strategy.
+strategy:
   type: Recreate
+
+# Deprecated: when non-empty, this value overrides strategy.
+updateStrategy: {}
 
 # Use a Secret with the keys `auth-token` and `web-server-password` instead
 # of setting auth.token and webServer.password directly.
@@ -77,3 +81,7 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 terminationGracePeriodSeconds: 30
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900

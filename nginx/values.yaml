@@ -127,13 +127,19 @@ replicaCount: 1
 ## @param revisionHistoryLimit The number of old history to retain to allow rollback
 ##
 revisionHistoryLimit: 10
-## @param updateStrategy.type NGINX deployment strategy type
-## @param updateStrategy.rollingUpdate NGINX deployment rolling update configuration parameters
+## @param strategy.type NGINX deployment strategy type
+## @param strategy.rollingUpdate NGINX deployment rolling update configuration parameters
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 ##
-updateStrategy:
+# Canonical Deployment strategy.
+strategy:
   type: RollingUpdate
-  rollingUpdate: {}
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+# Deprecated: when non-empty, this value overrides strategy.
+updateStrategy: {}
 ## @param podLabels Additional labels for NGINX pods
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 ##
@@ -198,7 +204,7 @@ schedulerName: ""
 ## @param terminationGracePeriodSeconds In seconds, time the given to the NGINX pod needs to terminate gracefully
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
 ##
-terminationGracePeriodSeconds: ""
+terminationGracePeriodSeconds: 30
 ## @param topologySpreadConstraints Topology Spread Constraints for pod assignment
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 ## The value is evaluated as a template
@@ -917,3 +923,7 @@ metrics:
     ##       summary: Tomcat instance is down.
     ##
     rules: []
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900

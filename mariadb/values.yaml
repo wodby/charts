@@ -239,6 +239,12 @@ primary:
   ## @param primary.updateStrategy.type MariaDB primary statefulset strategy type
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
   ##
+  ## Minimum time a ready pod must remain healthy before an update continues.
+  minReadySeconds: 10
+
+  ## Time allowed for the pod to terminate gracefully.
+  terminationGracePeriodSeconds: 30
+
   updateStrategy:
     ## StrategyType
     ## Can be set to RollingUpdate or OnDelete
@@ -669,6 +675,12 @@ secondary:
   ## @param secondary.updateStrategy.type MariaDB secondary statefulset strategy type
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
   ##
+  ## Minimum time a ready pod must remain healthy before an update continues.
+  minReadySeconds: 10
+
+  ## Time allowed for the pod to terminate gracefully.
+  terminationGracePeriodSeconds: 30
+
   updateStrategy:
     ## StrategyType
     ## Can be set to RollingUpdate or OnDelete

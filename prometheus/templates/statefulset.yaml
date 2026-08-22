@@ -13,6 +13,7 @@ metadata:
     {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}

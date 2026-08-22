@@ -6,10 +6,12 @@ metadata:
   labels:
     {{- include "mtproxy.labels" . | nindent 4 }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
   replicas: {{ .Values.replicaCount }}
-  {{- if .Values.updateStrategy }}
+  {{- with (default .Values.strategy .Values.updateStrategy) }}
   strategy:
-    {{- toYaml .Values.updateStrategy | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:

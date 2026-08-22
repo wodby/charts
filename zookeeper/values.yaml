@@ -1019,3 +1019,9 @@ tls:
   ##     memory: 1024Mi
   ##
   resources: {}
+
+# Minimum time a ready pod must remain healthy before an update continues.
+minReadySeconds: 10
+
+# Time allowed for the pod to terminate gracefully.
+terminationGracePeriodSeconds: 30

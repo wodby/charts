@@ -100,3 +100,6 @@ affinity: {}
 topologySpreadConstraints: []
 
 terminationGracePeriodSeconds: 30
+
+# Minimum time a ready pod must remain healthy before an update continues.
+minReadySeconds: 10

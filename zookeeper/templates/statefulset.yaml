@@ -10,6 +10,7 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   podManagementPolicy: {{ .Values.podManagementPolicy }}
@@ -30,6 +31,7 @@ spec:
       labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
         app.kubernetes.io/component: zookeeper
     spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       enableServiceLinks: {{ .Values.enableServiceLinks }}
       serviceAccountName: {{ template "zookeeper.serviceAccountName" . }}
       {{- include "zookeeper.imagePullSecrets" . | nindent 6 }}
