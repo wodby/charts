@@ -11,9 +11,11 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
-  {{- with .Values.updateStrategy }}
+  {{- with (default .Values.strategy .Values.updateStrategy) }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}

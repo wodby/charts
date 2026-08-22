@@ -2,7 +2,13 @@ apiVersion: v2
 name: stateless
 description: Boilerplate chart for stateless services
 type: application
-version: 0.1.1
+version: 0.2.0
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before considering replacement pods available
 appVersion: "1.0.0"
 dependencies:
   - name: common

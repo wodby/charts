@@ -2,7 +2,7 @@ apiVersion: v2
 name: phpmyadmin
 description: phpMyAdmin chart for the official phpMyAdmin image.
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "5"
 keywords:
   - phpmyadmin
@@ -16,4 +16,6 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Deploy phpMyAdmin 5 with cookie authentication on an unprivileged HTTP port
+      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before considering replacement pods available

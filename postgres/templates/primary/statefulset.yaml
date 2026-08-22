@@ -12,6 +12,7 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.primary.minReadySeconds }}
   replicas: {{ ternary 1 0 (gt (int .Values.primary.replicaCount) 0) }}
   serviceName: {{ include "postgresql.v1.primary.svc.headless" . }}
   {{- if .Values.primary.updateStrategy }}
@@ -59,9 +60,7 @@ spec:
       {{- if .Values.primary.schedulerName }}
       schedulerName: {{ .Values.primary.schedulerName | quote }}
       {{- end }}
-      {{- if .Values.primary.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.primary.terminationGracePeriodSeconds }}
-      {{- end }}
       {{- if .Values.primary.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.primary.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}

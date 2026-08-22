@@ -1,4 +1,9 @@
 annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before considering replacement pods available
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
@@ -7,4 +12,4 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: vinyl
-version: 0.1.1
+version: 0.2.0

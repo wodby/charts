@@ -376,17 +376,24 @@ initContainers: []
 ##         containerPort: 1234
 ##
 sidecars: []
-## @param updateStrategy.type Apache Server deployment strategy type.
+## @param strategy.type Apache Server deployment strategy type.
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 ## e.g:
-## updateStrategy:
+## strategy:
 ##  type: RollingUpdate
 ##  rollingUpdate:
 ##    maxSurge: 25%
 ##    maxUnavailable: 25%
 ##
-updateStrategy:
+# Canonical Deployment strategy.
+strategy:
   type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+# Deprecated: when non-empty, this value overrides strategy.
+updateStrategy: {}
 ## @section Other Parameters
 
 ## Apache Pod Disruption Budget configuration
@@ -759,3 +766,10 @@ serviceAccount:
   ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
   ##
   annotations: {}
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900
+
+# Time allowed for the pod to terminate gracefully.
+terminationGracePeriodSeconds: 30

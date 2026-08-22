@@ -122,3 +122,7 @@ tolerations: []
 affinity: {}
 topologySpreadConstraints: []
 terminationGracePeriodSeconds: 30
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900

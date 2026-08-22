@@ -2,12 +2,14 @@ annotations:
   category: Database
   licenses: Apache-2.0
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Avoid duplicate WODBY environment variables when platform variables are injected
+    - kind: added
+      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before continuing rolling updates
 apiVersion: v2
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: mariadb
-version: 0.2.2
+version: 0.3.0

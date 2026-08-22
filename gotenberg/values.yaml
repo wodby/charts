@@ -88,3 +88,14 @@ tolerations: []
 affinity: {}
 
 terminationGracePeriodSeconds: 30
+
+# Deployment availability and progress timing.
+minReadySeconds: 10
+progressDeadlineSeconds: 900
+
+# Deployment rollout strategy.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1

@@ -2,7 +2,13 @@ apiVersion: v2
 name: prometheus
 description: Prometheus server chart for Wodby services
 type: application
-version: 0.1.0
+version: 0.2.0
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
+    - kind: changed
+      description: Wait 10 seconds after readiness before continuing rolling updates
 appVersion: "3.13.0"
 dependencies:
 - name: common

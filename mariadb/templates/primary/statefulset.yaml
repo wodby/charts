@@ -9,6 +9,7 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.primary.minReadySeconds }}
   replicas: {{ ternary 1 0 (gt (int .Values.primary.replicaCount) 0) }}
   revisionHistoryLimit: {{ .Values.primary.revisionHistoryLimit }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.podLabels .Values.commonLabels ) "context" . ) }}
@@ -31,6 +32,7 @@ spec:
       labels: {{- include "common.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
         app.kubernetes.io/component: primary
     spec:
+      terminationGracePeriodSeconds: {{ .Values.primary.terminationGracePeriodSeconds }}
       {{- include "mariadb.imagePullSecrets" . | nindent 6 }}
       automountServiceAccountToken: {{ .Values.primary.automountServiceAccountToken }}
       {{- if .Values.primary.hostAliases }}
