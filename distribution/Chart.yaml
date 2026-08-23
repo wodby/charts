@@ -2,7 +2,7 @@ apiVersion: v2
 name: distribution
 description: CNCF Distribution Registry chart for Wodby
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "3.1.1"
 keywords:
 - registry
@@ -14,7 +14,5 @@ dependencies:
   version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+    - kind: fixed
+      description: Keep the registry container when htpasswd is disabled for token authentication

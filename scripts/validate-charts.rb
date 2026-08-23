@@ -111,6 +111,37 @@ def assert_no_hpa!(chart, documents)
   raise "#{chart} renders a HorizontalPodAutoscaler; Wodby backend owns autoscaling"
 end
 
+def assert_workload_has_containers!(chart, workload)
+  containers = Array(workload.dig("spec", "template", "spec", "containers"))
+  return unless containers.empty?
+
+  raise "#{chart} renders a workload without containers"
+end
+
+def assert_distribution_auth_modes!
+  {
+    "disabled" => false,
+    "enabled" => true,
+  }.each do |mode, enabled|
+    documents = render("distribution", [
+      "fullnameOverride=#{WORKLOAD_NAME}",
+      "auth.htpasswd.enabled=#{enabled}",
+      "existingEnvSecret=wodby-conformance-existing-secret",
+    ])
+    pod_spec = target_workload(documents).dig("spec", "template", "spec")
+    container_names = Array(pod_spec["containers"]).map { |container| container["name"] }
+    unless container_names == ["distribution"]
+      raise "distribution renders containers=#{container_names.inspect} with htpasswd #{mode}"
+    end
+
+    init_container_names = Array(pod_spec["initContainers"]).map { |container| container["name"] }
+    has_htpasswd = init_container_names.include?("htpasswd")
+    unless has_htpasswd == enabled
+      raise "distribution htpasswd init container presence does not match htpasswd #{mode}"
+    end
+  end
+end
+
 def value_path_candidates(value, prefix = nil, candidates = [])
   return candidates unless value.is_a?(Hash)
 
@@ -307,6 +338,8 @@ charts.each do |chart|
   target_workload(named_documents)
 
   primary = target_workload(named_documents)
+  assert_workload_has_containers!(chart, primary)
+  assert_distribution_auth_modes! if chart == "distribution"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)
