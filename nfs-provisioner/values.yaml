@@ -5,6 +5,12 @@
 ## @param replicaCount Number of NFS provisioner replicas to deploy. `0` disables the StatefulSet and any value greater than `0` is normalized to `1`.
 replicaCount: 1
 
+## @param nameOverride Override the app.kubernetes.io/name label and chart-derived name.
+nameOverride: ""
+
+## @param fullnameOverride Override the fully qualified resource name.
+fullnameOverride: ""
+
 # imagePullSecrets:
 
 commonLabels: {}
