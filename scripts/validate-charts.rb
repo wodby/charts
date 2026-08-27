@@ -7,6 +7,7 @@ RELEASE_NAME = "wodby-conformance"
 WORKLOAD_NAME = "wodby-conformance-workload"
 SERVICE_ACCOUNT_NAME = "wodby-conformance-service-account"
 IMAGE_PULL_SECRET_NAME = "wodby-conformance-image-pull-secret"
+APP_NAME = "wodby-conformance-app"
 WORKLOAD_KINDS = %w[Deployment StatefulSet DaemonSet].freeze
 
 CHART_VALUES = {
@@ -116,6 +117,24 @@ def assert_workload_has_containers!(chart, workload)
   return unless containers.empty?
 
   raise "#{chart} renders a workload without containers"
+end
+
+def assert_app_name_override!(chart, documents)
+  labels = documents.map { |document| document.dig("metadata", "labels", "app.kubernetes.io/name") }.compact
+  if labels.empty?
+    raise "#{chart} does not render app.kubernetes.io/name on any resource"
+  end
+  unless labels.all? { |label| label == APP_NAME }
+    raise "#{chart} does not apply nameOverride consistently to resource labels: #{labels.uniq.inspect}"
+  end
+
+  workloads(documents).each do |workload|
+    selector = workload.dig("spec", "selector", "matchLabels", "app.kubernetes.io/name")
+    pod_label = workload.dig("spec", "template", "metadata", "labels", "app.kubernetes.io/name")
+    unless selector == APP_NAME && pod_label == APP_NAME
+      raise "#{chart} does not apply nameOverride consistently to #{workload["kind"]} selectors and pod labels"
+    end
+  end
 end
 
 def assert_distribution_auth_modes!
@@ -330,6 +349,10 @@ charts.each do |chart|
     next
   end
 
+  unless values.key?("nameOverride") && values.key?("fullnameOverride")
+    raise "#{chart} must declare nameOverride and fullnameOverride in values.yaml"
+  end
+
   default_documents = render(chart)
   raise "#{chart} does not render a workload" if workloads(default_documents).empty?
   assert_no_hpa!(chart, default_documents)
@@ -338,6 +361,11 @@ charts.each do |chart|
   target_workload(named_documents)
 
   primary = target_workload(named_documents)
+  app_named_documents = render(chart, [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "nameOverride=#{APP_NAME}",
+  ])
+  assert_app_name_override!(chart, app_named_documents)
   assert_workload_has_containers!(chart, primary)
   assert_distribution_auth_modes! if chart == "distribution"
   assert_deployment_defaults!(chart, primary)
