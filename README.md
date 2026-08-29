@@ -26,7 +26,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | mariadb         | wodby/mariadb                               | 0.3.0   |
 | memcached       | wodby/memcached                             | 0.2.0   |
 | mtproxy         | telegrammessenger/proxy                     | 0.2.0   |
-| nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.4.0   |
+| nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.4.1   |
 | nginx           | wodby/nginx                                 | 0.3.0   |
 | node            | wodby/node                                  | 0.3.0   |
 | openclaw        | wodby/openclaw                              | 0.2.0   |
