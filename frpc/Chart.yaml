@@ -2,12 +2,12 @@ name: frpc
 apiVersion: v2
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+    - kind: fixed
+      description: Authenticate FRPC heartbeat and work connections when using OIDC
     - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Update the default FRP image to 0.69-0.3.1
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
-version: 0.3.0
+version: 0.3.1

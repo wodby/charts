@@ -53,6 +53,8 @@ spec:
               value: {{ .Values.frpc.serverPort | quote }}
             - name: FRPC_AUTH_METHOD
               value: 'oidc'
+            - name: FRPC_AUTH_ADDITIONAL_SCOPES
+              value: {{ .Values.frpc.additionalScopes | toJson | quote }}
             - name: FRPC_LOCATION
               value: {{ .Values.frpc.location | quote }}
             - name: FRPC_LOCAL_PORT
