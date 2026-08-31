@@ -1,7 +1,7 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Drain service endpoints before Vinyl shuts down
+    - kind: fixed
+      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
@@ -10,4 +10,4 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: vinyl
-version: 0.2.1
+version: 0.2.2

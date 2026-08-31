@@ -4,10 +4,8 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: postgres
-version: 0.3.0
+version: 0.3.1
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before continuing rolling updates
+    - kind: fixed
+      description: Omit RollingUpdate settings when the OnDelete StatefulSet strategy is selected
