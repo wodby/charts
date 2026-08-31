@@ -161,6 +161,45 @@ def assert_distribution_auth_modes!
   end
 end
 
+def assert_pgadmin_linked_database_login!
+  secret_name = "wodby-conformance-database"
+  secret_key = "PGADMIN_DB_PASSWORD"
+  documents = render("pgadmin", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "server.enabled=true",
+    "server.host=postgres",
+    "server.port=5432",
+    "server.username=app",
+    "server.maintenanceDatabase=app",
+    "server.passwordSecret=#{secret_name}",
+    "server.passwordKey=#{secret_key}",
+  ])
+  pod_spec = target_workload(documents).dig("spec", "template", "spec")
+  init_container = Array(pod_spec["initContainers"]).find { |container| container["name"] == "pgpass" }
+  raise "pgadmin does not render the pgpass init container" if init_container.nil?
+
+  password_env = Array(init_container["env"]).find { |env| env["name"] == "PGPASS_PASSWORD" }
+  unless password_env&.dig("valueFrom", "secretKeyRef") == {"name" => secret_name, "key" => secret_key}
+    raise "pgadmin pgpass init container does not read the configured password Secret"
+  end
+
+  main_container = Array(pod_spec["containers"]).find { |container| container["name"] == "pgadmin" }
+  pgpass_env = Array(main_container["env"]).find { |env| env["name"] == "PGPASS_FILE" }
+  unless pgpass_env == {"name" => "PGPASS_FILE", "value" => "/pgpass/pgpass"}
+    raise "pgadmin does not configure PGPASS_FILE for linked database login"
+  end
+
+  pgpass_mount = Array(main_container["volumeMounts"]).find { |mount| mount["name"] == "pgpass" }
+  unless pgpass_mount == {"name" => "pgpass", "mountPath" => "/pgpass", "readOnly" => true}
+    raise "pgadmin does not mount the generated password file read-only"
+  end
+
+  pgpass_volume = Array(pod_spec["volumes"]).find { |volume| volume["name"] == "pgpass" }
+  unless pgpass_volume == {"name" => "pgpass", "emptyDir" => {}}
+    raise "pgadmin does not provide storage for the generated password file"
+  end
+end
+
 def value_path_candidates(value, prefix = nil, candidates = [])
   return candidates unless value.is_a?(Hash)
 
@@ -368,6 +407,7 @@ charts.each do |chart|
   assert_app_name_override!(chart, app_named_documents)
   assert_workload_has_containers!(chart, primary)
   assert_distribution_auth_modes! if chart == "distribution"
+  assert_pgadmin_linked_database_login! if chart == "pgadmin"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)

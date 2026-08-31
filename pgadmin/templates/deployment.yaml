@@ -1,3 +1,7 @@
+{{- if ne (empty .Values.server.passwordSecret) (empty .Values.server.passwordKey) -}}
+{{- fail "server.passwordSecret and server.passwordKey must be configured together" -}}
+{{- end -}}
+{{- $serverPasswordEnabled := and .Values.server.enabled .Values.server.passwordSecret .Values.server.passwordKey -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,9 +54,58 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      {{- with .Values.initContainers }}
+      {{- if or $serverPasswordEnabled .Values.initContainers }}
       initContainers:
+        {{- if $serverPasswordEnabled }}
+        - name: pgpass
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "pgadmin.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /venv/bin/python3
+            - -c
+          args:
+            - |
+              import os
+              from pathlib import Path
+
+              def escape(value):
+                  return value.replace("\\", "\\\\").replace(":", "\\:")
+
+              fields = (
+                  os.environ["PGPASS_HOST"],
+                  os.environ["PGPASS_PORT"],
+                  os.environ["PGPASS_DATABASE"],
+                  os.environ["PGPASS_USERNAME"],
+                  os.environ["PGPASS_PASSWORD"],
+              )
+              path = Path("/pgpass/pgpass")
+              path.write_text(":".join(escape(value) for value in fields) + "\n")
+              path.chmod(0o600)
+          env:
+            - name: PGPASS_HOST
+              value: {{ .Values.server.host | quote }}
+            - name: PGPASS_PORT
+              value: {{ .Values.server.port | quote }}
+            - name: PGPASS_DATABASE
+              value: {{ .Values.server.maintenanceDatabase | quote }}
+            - name: PGPASS_USERNAME
+              value: {{ .Values.server.username | quote }}
+            - name: PGPASS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.server.passwordSecret | quote }}
+                  key: {{ .Values.server.passwordKey | quote }}
+          volumeMounts:
+            - name: pgpass
+              mountPath: /pgpass
+        {{- end }}
+        {{- with .Values.initContainers }}
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+        {{- end }}
       {{- end }}
       containers:
         - name: {{ .Values.containerName | default .Chart.Name }}
@@ -87,6 +140,10 @@ spec:
               value: /pgadmin4/servers.json
             - name: PGADMIN_REPLACE_SERVERS_ON_STARTUP
               value: {{ .Values.server.replaceOnStartup | quote }}
+            {{- if $serverPasswordEnabled }}
+            - name: PGPASS_FILE
+              value: /pgpass/pgpass
+            {{- end }}
             {{- end }}
             {{- with .Values.envVars }}
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
@@ -134,6 +191,11 @@ spec:
               subPath: servers.json
               readOnly: true
             {{- end }}
+            {{- if $serverPasswordEnabled }}
+            - name: pgpass
+              mountPath: /pgpass
+              readOnly: true
+            {{- end }}
             {{- with .Values.extraVolumeMounts }}
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
             {{- end }}
@@ -154,6 +216,10 @@ spec:
         - name: servers
           configMap:
             name: {{ include "pgadmin.fullname" . }}-servers
+        {{- end }}
+        {{- if $serverPasswordEnabled }}
+        - name: pgpass
+          emptyDir: {}
         {{- end }}
         {{- with .Values.extraVolumes }}
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}

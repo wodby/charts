@@ -75,6 +75,8 @@ server:
   maintenanceDatabase: postgres
   sslMode: prefer
   replaceOnStartup: true
+  passwordSecret: ""
+  passwordKey: ""
 
 persistence:
   enabled: false
