@@ -31,7 +31,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | node            | wodby/node                                  | 0.3.0   |
 | openclaw        | wodby/openclaw                              | 0.2.0   |
 | opensmtpd       | wodby/opensmtpd                             | 0.4.0   |
-| pgadmin         | dpage/pgadmin4                              | 0.2.0   |
+| pgadmin         | dpage/pgadmin4                              | 0.3.0   |
 | php-fpm         | wodby/php                                   | 0.3.0   |
 | phpmyadmin      | phpmyadmin                                  | 0.2.0   |
 | postgres        | wodby/postgres                              | 0.3.0   |
