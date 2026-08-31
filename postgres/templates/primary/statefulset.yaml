@@ -15,8 +15,15 @@ spec:
   minReadySeconds: {{ .Values.primary.minReadySeconds }}
   replicas: {{ ternary 1 0 (gt (int .Values.primary.replicaCount) 0) }}
   serviceName: {{ include "postgresql.v1.primary.svc.headless" . }}
-  {{- if .Values.primary.updateStrategy }}
-  updateStrategy: {{- toYaml .Values.primary.updateStrategy | nindent 4 }}
+  {{- with .Values.primary.updateStrategy }}
+  updateStrategy:
+    type: {{ .type }}
+    {{- if eq .type "RollingUpdate" }}
+    {{- with .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
   {{- end }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.primary.podLabels .Values.commonLabels ) "context" . ) }}
   selector:

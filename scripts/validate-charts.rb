@@ -427,6 +427,20 @@ def assert_deployment_overrides!(chart, workload)
   unless overridden.dig("template", "spec", "terminationGracePeriodSeconds") == 0
     raise "#{chart} does not render terminationGracePeriodSeconds=0"
   end
+
+  non_rolling_type = kind == "Deployment" ? "Recreate" : "OnDelete"
+  non_rolling = target_workload(render(chart, [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "#{paths.fetch(:strategy)}.type=#{non_rolling_type}",
+  ])).fetch("spec")
+  non_rolling_strategy = non_rolling.fetch(strategy_key)
+  unless non_rolling_strategy["type"] == non_rolling_type
+    raise "#{chart} does not apply the #{non_rolling_type} #{strategy_key}"
+  end
+  if non_rolling_strategy.key?("rollingUpdate")
+    raise "#{chart} renders rollingUpdate settings with the #{non_rolling_type} #{strategy_key}"
+  end
+
   return unless kind == "Deployment"
 
   rolling = overridden.fetch("strategy").fetch("rollingUpdate")
@@ -437,20 +451,6 @@ def assert_deployment_overrides!(chart, workload)
     raise "#{chart} does not render progressDeadlineSeconds=1"
   end
 
-  if chart == "php-fpm"
-    recreated = target_workload(render(chart, [
-      "fullnameOverride=#{WORKLOAD_NAME}",
-      "#{paths.fetch(:strategy)}.type=Recreate",
-    ])).fetch("spec")
-    recreate_strategy = recreated.fetch("strategy")
-    unless recreate_strategy["type"] == "Recreate"
-      raise "#{chart} does not apply the Recreate deployment strategy"
-    end
-    if recreate_strategy.key?("rollingUpdate")
-      raise "#{chart} renders rollingUpdate settings with the Recreate deployment strategy"
-    end
-  end
-
   return unless LEGACY_DEPLOYMENT_STRATEGY_CHARTS.include?(chart)
 
   legacy = target_workload(render(chart, [
@@ -459,6 +459,9 @@ def assert_deployment_overrides!(chart, workload)
   ])).fetch("spec")
   unless legacy.dig("strategy", "type") == "Recreate"
     raise "#{chart} does not preserve the deprecated updateStrategy override"
+  end
+  if legacy.fetch("strategy").key?("rollingUpdate")
+    raise "#{chart} renders rollingUpdate settings with the deprecated Recreate updateStrategy override"
   end
 end
 
@@ -476,6 +479,9 @@ def assert_secondary_workload_overrides!(chart)
   spec = matches.first.fetch("spec")
   unless spec.dig("updateStrategy", "type") == "OnDelete"
     raise "#{chart} secondary workload does not apply its configured update strategy"
+  end
+  if spec.fetch("updateStrategy").key?("rollingUpdate")
+    raise "#{chart} secondary workload renders rollingUpdate settings with OnDelete"
   end
   unless spec["minReadySeconds"] == 0
     raise "#{chart} secondary workload does not render minReadySeconds=0"
