@@ -62,6 +62,16 @@ service:
 resources: {}
 envVars: []
 
+# Custom lifecycle hooks override the built-in graceful shutdown hook.
+lifecycleHooks: {}
+
+# Give endpoint updates time to propagate before Distribution receives SIGTERM,
+# then let its HTTP server drain active connections before exiting.
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
+  drainTimeout: 45s
+
 # Wodby stores secret environment values in this Kubernetes Secret. Mounting
 # it also lets the GCS driver consume a service-account JSON value as a file.
 existingEnvSecret: ""
@@ -121,7 +131,7 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 topologySpreadConstraints: []
-terminationGracePeriodSeconds: 30
+terminationGracePeriodSeconds: 60
 
 # Deployment availability and progress timing.
 minReadySeconds: 10

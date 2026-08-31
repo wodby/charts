@@ -19,7 +19,9 @@ version: 0.3.1
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Allow services to configure PHP container lifecycle hooks for graceful shutdown
+      description: Drain service endpoints before PHP-FPM receives its graceful stop signal
+    - kind: added
+      description: Allow custom lifecycle hooks or an explicit graceful-shutdown opt-out
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

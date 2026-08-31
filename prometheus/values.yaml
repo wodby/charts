@@ -71,6 +71,13 @@ envVars: []
 command: []
 args: []
 
+# Custom lifecycle hooks override the built-in graceful shutdown hook.
+lifecycleHooks: {}
+
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
+
 startupProbe: {}
 livenessProbe:
   httpGet:

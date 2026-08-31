@@ -45,8 +45,16 @@ spec:
           {{- if .Values.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
-          {{- with .Values.lifecycleHooks }}
-          lifecycle: {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
+          {{- else if and .Values.gracefulShutdown.enabled (not .Values.command) }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -ec
+                  - sleep {{ int .Values.gracefulShutdown.preStopDelaySeconds }}
           {{- end }}
           {{- with .Values.envVars }}
           env:

@@ -82,8 +82,14 @@ envVars: []
 command: []
 args: []
 
-# Optional lifecycle hooks for the PHP container.
+# Custom lifecycle hooks override the built-in graceful shutdown hook.
 lifecycleHooks: {}
+
+# Delay termination while Kubernetes removes the pod from service endpoints.
+# The PHP image's SIGQUIT stop signal then lets PHP-FPM finish active requests.
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 
 livenessProbe:
   exec:

@@ -247,6 +247,12 @@ args: []
 ## @param lifecycleHooks for the Apache server container(s) to automate configuration before or after startup
 ##
 lifecycleHooks: {}
+
+## @param gracefulShutdown.enabled Enable the built-in Apache graceful shutdown hook
+## @param gracefulShutdown.preStopDelaySeconds Delay shutdown while Kubernetes removes the pod from service endpoints
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 ## Apache pods' resource requests and limits
 ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 ## We usually recommend not to specify default resources and to leave this as a conscious

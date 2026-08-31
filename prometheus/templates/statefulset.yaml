@@ -65,6 +65,18 @@ spec:
         args:
           {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 10 }}
         {{- end }}
+        {{- if .Values.lifecycleHooks }}
+        lifecycle:
+          {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 10 }}
+        {{- else if and .Values.gracefulShutdown.enabled (not .Values.command) }}
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - sleep {{ int .Values.gracefulShutdown.preStopDelaySeconds }}
+        {{- end }}
         env:
         - name: WODBY
           value: '1'

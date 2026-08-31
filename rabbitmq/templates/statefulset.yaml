@@ -97,15 +97,22 @@ spec:
           {{- if .Values.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
-          {{- if .Values.lifecycle }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
+          {{- else if .Values.lifecycle }}
           lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycle "context" $) | nindent 12 }}
-          {{- else }}
+          {{- else if and .Values.gracefulShutdown.enabled (not .Values.command) }}
           lifecycle:
             preStop:
               exec:
                 command:
-                  - rabbitmqctl
-                  - stop_app
+                  - /bin/sh
+                  - -ec
+                  - |-
+                    {{- if gt (int .Values.replicaCount) 1 }}
+                    rabbitmq-upgrade await_online_quorum_plus_one -t {{ int .Values.gracefulShutdown.timeoutSeconds }}
+                    {{- end }}
+                    rabbitmq-upgrade drain -t {{ int .Values.gracefulShutdown.timeoutSeconds }}
           {{- end }}
           env:
             - name: MY_POD_NAME

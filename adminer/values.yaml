@@ -85,7 +85,16 @@ readinessProbe:
   periodSeconds: 5
   failureThreshold: 2
 
+# Custom lifecycle hooks override both the legacy lifecycle value and the
+# built-in graceful shutdown hook.
+lifecycleHooks: {}
+
+# Deprecated: use lifecycleHooks.
 lifecycle: {}
+
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 
 # Keep only one login-session endpoint active during upgrades.
 strategy:

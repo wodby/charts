@@ -86,7 +86,16 @@ readinessProbe:
   periodSeconds: 5
   failureThreshold: 2
 
+# Custom lifecycle hooks override both the legacy lifecycle value and the
+# built-in graceful shutdown hook.
+lifecycleHooks: {}
+
+# Deprecated: use lifecycleHooks.
 lifecycle: {}
+
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 
 # Session files are local to the pod, so avoid overlapping old and new pods.
 strategy:

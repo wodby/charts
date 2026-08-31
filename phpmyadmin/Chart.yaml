@@ -2,7 +2,7 @@ apiVersion: v2
 name: phpmyadmin
 description: phpMyAdmin chart for the official phpMyAdmin image.
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "5"
 keywords:
   - phpmyadmin
@@ -16,6 +16,4 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Drain service endpoints before phpMyAdmin receives its graceful stop signal

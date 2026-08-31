@@ -26,7 +26,7 @@ revisionHistoryLimit: 10
 podManagementPolicy: Parallel
 updateStrategy:
   type: RollingUpdate
-terminationGracePeriodSeconds: 120
+terminationGracePeriodSeconds: 270
 
 podAffinityPreset: ""
 podAntiAffinityPreset: soft
@@ -48,7 +48,18 @@ resources: {}
 
 command: []
 args: []
+
+# Custom lifecycle hooks override both the legacy lifecycle value and the
+# built-in RabbitMQ drain hook.
+lifecycleHooks: {}
+
+# Deprecated: use lifecycleHooks.
 lifecycle: {}
+
+gracefulShutdown:
+  enabled: true
+  timeoutSeconds: 120
+
 envVars: []
 envFrom: []
 initContainers: []

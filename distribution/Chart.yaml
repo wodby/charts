@@ -2,7 +2,7 @@ apiVersion: v2
 name: distribution
 description: CNCF Distribution Registry chart for Wodby
 type: application
-version: 0.2.1
+version: 0.2.2
 appVersion: "3.1.1"
 keywords:
 - registry
@@ -14,5 +14,7 @@ dependencies:
   version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Keep the registry container when htpasswd is disabled for token authentication
+    - kind: added
+      description: Drain active registry connections during pod termination
+    - kind: changed
+      description: Increase the default termination grace period to 60 seconds

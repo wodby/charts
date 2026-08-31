@@ -205,6 +205,12 @@ schedulerName: ""
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
 ##
 terminationGracePeriodSeconds: 30
+
+## @param gracefulShutdown.enabled Enable the built-in traffic-drain delay
+## @param gracefulShutdown.preStopDelaySeconds Delay shutdown while Kubernetes removes the pod from service endpoints
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 ## @param topologySpreadConstraints Topology Spread Constraints for pod assignment
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 ## The value is evaluated as a template
@@ -322,19 +328,8 @@ resources: {}
 ## VARNISH containers' lifecycleHooks
 ## ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
-## If you do want to specify lifecycleHooks, uncomment the following
-## lines, adjust them as necessary, and remove the curly braces on 'lifecycle:{}'.
-## @param lifecycleHooks Optional lifecycleHooks for the VARNISH container
+## @param lifecycleHooks Custom lifecycle hooks for the VARNISH container. Non-empty values override gracefulShutdown.
 lifecycleHooks: {}
-## Example:
-## postStart:
-##   exec:
-##     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
-## Example:
-## preStop:
-##   exec:
-##     command: ["/bin/sleep", "20"]
-##     command: ["/bin/sh","-c","varnish -s quit; while killall -0 varnish; do sleep 1; done"]
 
 ## VARNISH containers' startup probe.
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes

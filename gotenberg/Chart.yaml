@@ -1,12 +1,12 @@
 apiVersion: v2
 name: gotenberg
-version: 0.2.0
+version: 0.2.1
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
+      description: Drain service endpoints before Gotenberg shuts down
     - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Increase the default termination grace period to 60 seconds
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
