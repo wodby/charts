@@ -436,6 +436,21 @@ def assert_deployment_overrides!(chart, workload)
   unless overridden["progressDeadlineSeconds"] == 1
     raise "#{chart} does not render progressDeadlineSeconds=1"
   end
+
+  if chart == "php-fpm"
+    recreated = target_workload(render(chart, [
+      "fullnameOverride=#{WORKLOAD_NAME}",
+      "#{paths.fetch(:strategy)}.type=Recreate",
+    ])).fetch("spec")
+    recreate_strategy = recreated.fetch("strategy")
+    unless recreate_strategy["type"] == "Recreate"
+      raise "#{chart} does not apply the Recreate deployment strategy"
+    end
+    if recreate_strategy.key?("rollingUpdate")
+      raise "#{chart} renders rollingUpdate settings with the Recreate deployment strategy"
+    end
+  end
+
   return unless LEGACY_DEPLOYMENT_STRATEGY_CHARTS.include?(chart)
 
   legacy = target_workload(render(chart, [
