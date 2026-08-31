@@ -82,6 +82,9 @@ envVars: []
 command: []
 args: []
 
+# Optional lifecycle hooks for the PHP container.
+lifecycleHooks: {}
+
 livenessProbe:
   exec:
     command:

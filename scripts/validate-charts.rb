@@ -200,6 +200,22 @@ def assert_pgadmin_linked_database_login!
   end
 end
 
+def assert_php_fpm_lifecycle_hooks!
+  command = ["sh", "-c", "echo graceful"]
+  overrides = ["fullnameOverride=#{WORKLOAD_NAME}"]
+  command.each_with_index do |part, index|
+    overrides << "lifecycleHooks.preStop.exec.command[#{index}]=#{part}"
+  end
+
+  container = Array(
+    target_workload(render("php-fpm", overrides)).dig("spec", "template", "spec", "containers")
+  ).find { |candidate| candidate["name"] == "php" }
+  actual = container&.dig("lifecycle", "preStop", "exec", "command")
+  unless actual == command
+    raise "php-fpm does not render the configured lifecycle hooks: #{actual.inspect}"
+  end
+end
+
 def value_path_candidates(value, prefix = nil, candidates = [])
   return candidates unless value.is_a?(Hash)
 
@@ -408,6 +424,7 @@ charts.each do |chart|
   assert_workload_has_containers!(chart, primary)
   assert_distribution_auth_modes! if chart == "distribution"
   assert_pgadmin_linked_database_login! if chart == "pgadmin"
+  assert_php_fpm_lifecycle_hooks! if chart == "php-fpm"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)

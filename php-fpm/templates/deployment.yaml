@@ -45,6 +45,9 @@ spec:
           {{- if .Values.args }}
           args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
           {{- end }}
+          {{- with .Values.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
           {{- with .Values.envVars }}
           env:
             {{- toYaml . | nindent 12 }}
