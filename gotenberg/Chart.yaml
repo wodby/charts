@@ -1,12 +1,10 @@
 apiVersion: v2
 name: gotenberg
-version: 0.2.1
+version: 0.2.2
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Drain service endpoints before Gotenberg shuts down
-    - kind: changed
-      description: Increase the default termination grace period to 60 seconds
+    - kind: fixed
+      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
