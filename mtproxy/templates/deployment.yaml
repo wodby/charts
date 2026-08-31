@@ -11,7 +11,13 @@ spec:
   replicas: {{ .Values.replicaCount }}
   {{- with (default .Values.strategy .Values.updateStrategy) }}
   strategy:
-    {{- toYaml . | nindent 4 }}
+    type: {{ .type }}
+    {{- if eq .type "RollingUpdate" }}
+    {{- with .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
   {{- end }}
   selector:
     matchLabels:

@@ -21,8 +21,15 @@ spec:
   minReadySeconds: {{ .Values.readReplicas.minReadySeconds }}
   replicas: {{ .Values.readReplicas.replicaCount }}
   serviceName: {{ include "postgresql.v1.readReplica.svc.headless" . }}
-  {{- if .Values.readReplicas.updateStrategy }}
-  updateStrategy: {{- toYaml .Values.readReplicas.updateStrategy | nindent 4 }}
+  {{- with .Values.readReplicas.updateStrategy }}
+  updateStrategy:
+    type: {{ .type }}
+    {{- if eq .type "RollingUpdate" }}
+    {{- with .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
   {{- end }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.readReplicas.podLabels .Values.commonLabels ) "context" . ) }}
   selector:

@@ -2,13 +2,11 @@ apiVersion: v2
 name: mtproxy
 description: A Helm chart for Telegram MTProxy
 type: application
-version: 0.2.0
+version: 0.2.1
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+    - kind: fixed
+      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
 appVersion: "2.0beta"
 dependencies:
 - name: common

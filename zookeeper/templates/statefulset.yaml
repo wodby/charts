@@ -19,8 +19,15 @@ spec:
     matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
       app.kubernetes.io/component: zookeeper
   serviceName: {{ printf "%s-%s" (include "common.names.fullname" .) (default "headless" .Values.service.headless.servicenameOverride) | trunc 63 | trimSuffix "-" }}
-  {{- if .Values.updateStrategy }}
-  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- with .Values.updateStrategy }}
+  updateStrategy:
+    type: {{ .type }}
+    {{- if eq .type "RollingUpdate" }}
+    {{- with .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
   {{- end }}
   template:
     metadata:
