@@ -79,9 +79,33 @@ spec:
         {{- end }}
         image: {{ include "distribution.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- with .Values.envVars }}
+        {{- $hasDrainTimeout := false }}
+        {{- range .Values.envVars }}
+        {{- if eq .name "REGISTRY_HTTP_DRAINTIMEOUT" }}
+        {{- $hasDrainTimeout = true }}
+        {{- end }}
+        {{- end }}
+        {{- if or .Values.gracefulShutdown.enabled .Values.envVars }}
         env:
+          {{- if and .Values.gracefulShutdown.enabled (not $hasDrainTimeout) }}
+          - name: REGISTRY_HTTP_DRAINTIMEOUT
+            value: {{ .Values.gracefulShutdown.drainTimeout | quote }}
+          {{- end }}
+          {{- with .Values.envVars }}
           {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.lifecycleHooks }}
+        lifecycle:
+          {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 10 }}
+        {{- else if .Values.gracefulShutdown.enabled }}
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - sleep {{ int .Values.gracefulShutdown.preStopDelaySeconds }}
         {{- end }}
         ports:
           {{- toYaml .Values.containerPorts | nindent 10 }}

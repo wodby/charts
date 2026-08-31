@@ -35,9 +35,35 @@ LEGACY_DEPLOYMENT_STRATEGY_CHARTS = %w[
 ].freeze
 
 SHUTDOWN_GRACE_DEFAULTS = {
+  "distribution" => 60,
+  "gotenberg" => 60,
   "nfs-provisioner" => 100,
-  "rabbitmq" => 120,
+  "rabbitmq" => 270,
+  "solr" => 60,
 }.freeze
+
+GRACEFUL_SHUTDOWN_CHARTS = %w[
+  adminer
+  distribution
+  gotenberg
+  httpd
+  nginx
+  pgadmin
+  php-fpm
+  phpmyadmin
+  prometheus
+  rabbitmq
+  solr
+  varnish
+  vinyl
+].freeze
+
+LEGACY_LIFECYCLE_CHARTS = %w[
+  adminer
+  pgadmin
+  phpmyadmin
+  rabbitmq
+].freeze
 
 NESTED_DEPLOYMENT_VALUE_PATHS = {
   "mariadb" => {
@@ -197,6 +223,94 @@ def assert_pgadmin_linked_database_login!
   pgpass_volume = Array(pod_spec["volumes"]).find { |volume| volume["name"] == "pgpass" }
   unless pgpass_volume == {"name" => "pgpass", "emptyDir" => {}}
     raise "pgadmin does not provide storage for the generated password file"
+  end
+end
+
+def main_container(chart, overrides = [])
+  Array(
+    target_workload(render(chart, ["fullnameOverride=#{WORKLOAD_NAME}", *overrides]))
+      .dig("spec", "template", "spec", "containers")
+  ).first
+end
+
+def pre_stop_command(chart, overrides = [])
+  main_container(chart, overrides)&.dig("lifecycle", "preStop", "exec", "command")
+end
+
+def assert_graceful_shutdown_contract!(chart, values)
+  return unless GRACEFUL_SHUTDOWN_CHARTS.include?(chart)
+
+  default_command = pre_stop_command(chart)
+  if default_command.nil? || default_command.empty?
+    raise "#{chart} does not render its default graceful shutdown hook"
+  end
+
+  custom_command = ["custom-lifecycle-hook"]
+  actual_custom = pre_stop_command(chart, [
+    "lifecycleHooks.preStop.exec.command[0]=#{custom_command.first}",
+  ])
+  unless actual_custom == custom_command
+    raise "#{chart} does not let custom lifecycle hooks override the default: #{actual_custom.inspect}"
+  end
+
+  unless pre_stop_command(chart, ["gracefulShutdown.enabled=false"]).nil?
+    raise "#{chart} does not remove its default lifecycle hook when graceful shutdown is disabled"
+  end
+
+  if values.key?("command")
+    lifecycle = main_container(chart, ["command[0]=custom-command"])["lifecycle"]
+    unless lifecycle.nil?
+      raise "#{chart} applies a process-specific lifecycle hook to a custom command"
+    end
+  end
+
+  if LEGACY_LIFECYCLE_CHARTS.include?(chart)
+    legacy_command = ["legacy-lifecycle-hook"]
+    actual_legacy = pre_stop_command(chart, [
+      "lifecycle.preStop.exec.command[0]=#{legacy_command.first}",
+    ])
+    unless actual_legacy == legacy_command
+      raise "#{chart} no longer supports its legacy lifecycle value: #{actual_legacy.inspect}"
+    end
+  end
+
+  if chart == "nginx"
+    unless default_command.last.include?("sudo nginx -s quit")
+      raise "nginx graceful shutdown hook does not request a graceful NGINX quit"
+    end
+  elsif chart == "rabbitmq"
+    unless default_command.last.include?("rabbitmq-upgrade drain")
+      raise "rabbitmq graceful shutdown hook does not drain the node"
+    end
+    clustered_command = pre_stop_command(chart, ["replicaCount=2"])
+    unless clustered_command.last.include?("await_online_quorum_plus_one")
+      raise "rabbitmq clustered shutdown does not wait for safe quorum state"
+    end
+  else
+    unless default_command.last == "sleep 5"
+      raise "#{chart} graceful shutdown hook does not render the default endpoint-drain delay"
+    end
+    delayed_command = pre_stop_command(chart, ["gracefulShutdown.preStopDelaySeconds=17"])
+    unless delayed_command.last == "sleep 17"
+      raise "#{chart} does not apply the configured endpoint-drain delay"
+    end
+  end
+end
+
+def assert_distribution_drain_timeout!
+  default_env = Array(main_container("distribution")["env"])
+  default_timeout = default_env.find { |env| env["name"] == "REGISTRY_HTTP_DRAINTIMEOUT" }
+  unless default_timeout == {"name" => "REGISTRY_HTTP_DRAINTIMEOUT", "value" => "45s"}
+    raise "distribution does not configure the default HTTP drain timeout"
+  end
+
+  custom_env = Array(main_container("distribution", [
+    "envVars[0].name=REGISTRY_HTTP_DRAINTIMEOUT",
+    "envVars[0].value=20s",
+  ])["env"])
+  drain_timeouts = custom_env.select { |env| env["name"] == "REGISTRY_HTTP_DRAINTIMEOUT" }
+  unless drain_timeouts == [{"name" => "REGISTRY_HTTP_DRAINTIMEOUT", "value" => "20s"}]
+    raise "distribution does not preserve a custom HTTP drain timeout without duplicates"
   end
 end
 
@@ -408,6 +522,8 @@ charts.each do |chart|
   assert_workload_has_containers!(chart, primary)
   assert_distribution_auth_modes! if chart == "distribution"
   assert_pgadmin_linked_database_login! if chart == "pgadmin"
+  assert_graceful_shutdown_contract!(chart, values)
+  assert_distribution_drain_timeout! if chart == "distribution"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)

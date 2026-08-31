@@ -1,9 +1,7 @@
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Drain service endpoints before Varnish shuts down
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
@@ -12,4 +10,4 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: varnish
-version: 0.3.0
+version: 0.3.1

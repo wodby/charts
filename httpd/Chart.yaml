@@ -4,10 +4,8 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: httpd
-version: 0.3.0
+version: 0.3.1
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Drain service endpoints before Apache receives its graceful stop signal

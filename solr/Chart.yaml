@@ -14,13 +14,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.0
+version: 0.2.1
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
+      description: Drain service endpoints before Solr shuts down
     - kind: changed
-      description: Wait 10 seconds after readiness before continuing rolling updates
+      description: Increase the default termination grace period to 60 seconds
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

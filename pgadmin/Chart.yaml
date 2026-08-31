@@ -2,7 +2,7 @@ apiVersion: v2
 name: pgadmin
 description: pgAdmin chart for the official pgAdmin image.
 type: application
-version: 0.3.0
+version: 0.3.1
 appVersion: "9"
 keywords:
   - pgadmin
@@ -16,4 +16,4 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Support Secret-backed automatic login for declaratively registered PostgreSQL servers
+      description: Drain service endpoints before pgAdmin shuts down

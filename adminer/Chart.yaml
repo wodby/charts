@@ -2,7 +2,7 @@ apiVersion: v2
 name: adminer
 description: Adminer chart for the Wodby Adminer image.
 type: application
-version: 0.3.0
+version: 0.3.1
 appVersion: "6"
 keywords:
   - adminer
@@ -14,6 +14,4 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
-    - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Drain service endpoints before Adminer receives its graceful stop signal

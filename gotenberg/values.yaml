@@ -68,6 +68,13 @@ envVars: []
 command: []
 args: []
 
+# Custom lifecycle hooks override the built-in graceful shutdown hook.
+lifecycleHooks: {}
+
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
+
 # Additional volumes on the output Deployment definition.
 extraVolumes: []
 # - name: foo
@@ -87,7 +94,7 @@ tolerations: []
 
 affinity: {}
 
-terminationGracePeriodSeconds: 30
+terminationGracePeriodSeconds: 60
 
 # Deployment availability and progress timing.
 minReadySeconds: 10

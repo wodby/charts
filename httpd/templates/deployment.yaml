@@ -79,6 +79,14 @@ spec:
           {{- end }}
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.lifecycleHooks "context" $) | nindent 12 }}
+          {{- else if and .Values.gracefulShutdown.enabled (not .Values.command) }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -ec
+                  - sleep {{ int .Values.gracefulShutdown.preStopDelaySeconds }}
           {{- end }}
           env:
             {{- if .Values.extraEnvVars }}

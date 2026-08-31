@@ -2,7 +2,7 @@ apiVersion: v2
 name: rabbitmq
 description: RabbitMQ chart for Wodby RabbitMQ images.
 type: application
-version: 0.3.0
+version: 0.3.1
 appVersion: 4.3.4
 keywords:
   - rabbitmq
@@ -12,7 +12,7 @@ dependencies:
     version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
     - kind: changed
-      description: Wait 10 seconds after readiness before continuing rolling updates
+      description: Wait for safe quorum state and drain RabbitMQ before pod termination
+    - kind: changed
+      description: Increase the default termination grace period to 270 seconds
