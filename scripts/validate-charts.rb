@@ -210,6 +210,13 @@ def assert_pgadmin_linked_database_login!
   end
 
   main_container = Array(pod_spec["containers"]).find { |container| container["name"] == "pgadmin" }
+  replace_servers_env = Array(main_container["env"]).find do |env|
+    env["name"] == "PGADMIN_REPLACE_SERVERS_ON_STARTUP"
+  end
+  unless replace_servers_env == {"name" => "PGADMIN_REPLACE_SERVERS_ON_STARTUP", "value" => "True"}
+    raise "pgadmin does not enable replacing server definitions with the case-sensitive value expected by the image"
+  end
+
   pgpass_env = Array(main_container["env"]).find { |env| env["name"] == "PGPASS_FILE" }
   unless pgpass_env == {"name" => "PGPASS_FILE", "value" => "/pgpass/pgpass"}
     raise "pgadmin does not configure PGPASS_FILE for linked database login"

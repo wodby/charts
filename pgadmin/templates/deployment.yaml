@@ -139,7 +139,7 @@ spec:
             - name: PGADMIN_SERVER_JSON_FILE
               value: /pgadmin4/servers.json
             - name: PGADMIN_REPLACE_SERVERS_ON_STARTUP
-              value: {{ .Values.server.replaceOnStartup | quote }}
+              value: {{ ternary "True" "False" .Values.server.replaceOnStartup | quote }}
             {{- if $serverPasswordEnabled }}
             - name: PGPASS_FILE
               value: /pgpass/pgpass
