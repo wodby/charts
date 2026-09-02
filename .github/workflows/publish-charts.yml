@@ -69,6 +69,9 @@ jobs:
       - name: Validate charts
         run: ruby scripts/validate-charts.rb
 
+      - name: Test pgAdmin persisted administrator resolution
+        run: python3 scripts/test_pgadmin_server_import_user.py
+
   publish:
     name: Package and Push Charts
     needs: validate

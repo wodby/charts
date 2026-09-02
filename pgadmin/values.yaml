@@ -67,6 +67,7 @@ admin:
 
 server:
   enabled: false
+  resolveExistingAdmin: true
   name: PostgreSQL
   group: Wodby
   host: ""

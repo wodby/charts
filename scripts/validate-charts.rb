@@ -210,6 +210,31 @@ def assert_pgadmin_linked_database_login!
   end
 
   main_container = Array(pod_spec["containers"]).find { |container| container["name"] == "pgadmin" }
+  unless main_container["command"] == ["/venv/bin/python3"] &&
+         main_container["args"] == ["/opt/wodby/server-import-entrypoint.py"]
+    raise "pgadmin does not resolve a persisted administrator before linked server import"
+  end
+
+  resolver_mount = Array(main_container["volumeMounts"]).find do |mount|
+    mount["name"] == "server-import-entrypoint"
+  end
+  unless resolver_mount == {
+    "name" => "server-import-entrypoint",
+    "mountPath" => "/opt/wodby/server-import-entrypoint.py",
+    "subPath" => "server-import-entrypoint.py",
+    "readOnly" => true,
+  }
+    raise "pgadmin does not mount the persisted administrator resolver read-only"
+  end
+
+  resolver = documents.find do |document|
+    document["kind"] == "ConfigMap" &&
+      document.dig("metadata", "name") == "#{WORKLOAD_NAME}-server-import-entrypoint"
+  end
+  unless resolver&.dig("data", "server-import-entrypoint.py")&.include?("resolve_server_import_email")
+    raise "pgadmin does not render the persisted administrator resolver"
+  end
+
   replace_servers_env = Array(main_container["env"]).find do |env|
     env["name"] == "PGADMIN_REPLACE_SERVERS_ON_STARTUP"
   end
@@ -230,6 +255,16 @@ def assert_pgadmin_linked_database_login!
   pgpass_volume = Array(pod_spec["volumes"]).find { |volume| volume["name"] == "pgpass" }
   unless pgpass_volume == {"name" => "pgpass", "emptyDir" => {}}
     raise "pgadmin does not provide storage for the generated password file"
+  end
+
+  custom_container = target_workload(render("pgadmin", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "server.enabled=true",
+    "command[0]=/bin/echo",
+    "args[0]=custom",
+  ])).dig("spec", "template", "spec", "containers").first
+  unless custom_container["command"] == ["/bin/echo"] && custom_container["args"] == ["custom"]
+    raise "pgadmin persisted administrator resolution overrides a custom command"
   end
 end
 
