@@ -1,0 +1,12 @@
+{{- if and .Values.admin.reconcileEmail (empty .Values.command) (empty .Values.args) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgadmin.fullname" . }}-admin-email-reconciler
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pgadmin.labels" . | nindent 4 }}
+data:
+  reconcile-admin-email.py: |
+    {{- .Files.Get "files/reconcile-admin-email.py" | nindent 4 }}
+{{- end }}

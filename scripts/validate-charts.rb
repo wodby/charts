@@ -187,6 +187,43 @@ def assert_distribution_auth_modes!
   end
 end
 
+def assert_pgadmin_admin_email_reconciliation!
+  documents = render("pgadmin", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "admin.email=",
+    "envVars[0].name=PGADMIN_DEFAULT_EMAIL",
+    "envVars[0].value=user@domain.com",
+  ])
+  pod_spec = target_workload(documents).dig("spec", "template", "spec")
+  container = Array(pod_spec["containers"]).first
+  emails = Array(container["env"]).select { |env| env["name"] == "PGADMIN_DEFAULT_EMAIL" }
+  unless emails == [{"name" => "PGADMIN_DEFAULT_EMAIL", "value" => "user@domain.com"}]
+    raise "pgadmin does not accept one setting-backed PGADMIN_DEFAULT_EMAIL value"
+  end
+  unless container["command"] == ["/bin/sh", "-ec"] &&
+         Array(container["args"]).first.to_s.include?("reconcile-admin-email.py") &&
+         Array(container["args"]).first.to_s.include?("exec /entrypoint.sh")
+    raise "pgadmin does not run administrator email reconciliation before its entrypoint"
+  end
+
+  config_maps = documents.select { |document| document["kind"] == "ConfigMap" }
+  reconciler = config_maps.find do |config_map|
+    config_map.dig("metadata", "name") == "#{WORKLOAD_NAME}-admin-email-reconciler"
+  end
+  unless reconciler&.dig("data", "reconcile-admin-email.py")&.include?("reconcile_admin_email")
+    raise "pgadmin does not render the administrator email reconciler"
+  end
+
+  custom = target_workload(render("pgadmin", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "command[0]=/bin/echo",
+    "args[0]=custom",
+  ])).dig("spec", "template", "spec", "containers").first
+  unless custom["command"] == ["/bin/echo"] && custom["args"] == ["custom"]
+    raise "pgadmin administrator reconciliation overrides a custom command"
+  end
+end
+
 def assert_pgadmin_linked_database_login!
   secret_name = "wodby-conformance-database"
   secret_key = "PGADMIN_DB_PASSWORD"
@@ -549,6 +586,7 @@ charts.each do |chart|
   assert_app_name_override!(chart, app_named_documents)
   assert_workload_has_containers!(chart, primary)
   assert_distribution_auth_modes! if chart == "distribution"
+  assert_pgadmin_admin_email_reconciliation! if chart == "pgadmin"
   assert_pgadmin_linked_database_login! if chart == "pgadmin"
   assert_graceful_shutdown_contract!(chart, values)
   assert_distribution_drain_timeout! if chart == "distribution"

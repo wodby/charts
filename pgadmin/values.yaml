@@ -61,6 +61,7 @@ service:
 
 admin:
   email: pgadmin@wodby.com
+  reconcileEmail: true
   password: ""
   existingSecret: ""
   passwordKey: admin-password
