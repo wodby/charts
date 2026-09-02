@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "open3"
+require "json"
 require "yaml"
 
 RELEASE_NAME = "wodby-conformance"
@@ -249,6 +250,18 @@ def assert_pgadmin_linked_database_login!
     raise "pgadmin does not configure PGPASS_FILE for linked database login"
   end
 
+  servers_config = documents.find do |document|
+    document["kind"] == "ConfigMap" &&
+      document.dig("metadata", "name") == "#{WORKLOAD_NAME}-servers"
+  end
+  server_definition = JSON.parse(servers_config.dig("data", "servers.json")).dig("Servers", "1")
+  unless server_definition.dig("ConnectionParameters", "passfile") == ".pgpass"
+    raise "pgadmin linked server does not reference the generated password file"
+  end
+  if server_definition.key?("PassFile")
+    raise "pgadmin linked server uses the ignored legacy PassFile field"
+  end
+
   pgpass_mount = Array(main_container["volumeMounts"]).find { |mount| mount["name"] == "pgpass" }
   unless pgpass_mount == {"name" => "pgpass", "mountPath" => "/pgpass", "readOnly" => true}
     raise "pgadmin does not mount the generated password file read-only"
@@ -257,6 +270,23 @@ def assert_pgadmin_linked_database_login!
   pgpass_volume = Array(pod_spec["volumes"]).find { |volume| volume["name"] == "pgpass" }
   unless pgpass_volume == {"name" => "pgpass", "emptyDir" => {}}
     raise "pgadmin does not provide storage for the generated password file"
+  end
+
+  passwordless_documents = render("pgadmin", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "server.enabled=true",
+    "server.host=postgres",
+    "server.username=app",
+  ])
+  passwordless_config = passwordless_documents.find do |document|
+    document["kind"] == "ConfigMap" &&
+      document.dig("metadata", "name") == "#{WORKLOAD_NAME}-servers"
+  end
+  passwordless_parameters = JSON.parse(
+    passwordless_config.dig("data", "servers.json")
+  ).dig("Servers", "1", "ConnectionParameters")
+  if passwordless_parameters.key?("passfile")
+    raise "pgadmin server references a password file when credentials are disabled"
   end
 
   custom_container = target_workload(render("pgadmin", [

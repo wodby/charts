@@ -1,5 +1,8 @@
 {{- if .Values.server.enabled -}}
 {{- $connectionParameters := dict "sslmode" .Values.server.sslMode -}}
+{{- if and .Values.server.passwordSecret .Values.server.passwordKey -}}
+{{- $_ := set $connectionParameters "passfile" ".pgpass" -}}
+{{- end -}}
 {{- $server := dict
   "Name" .Values.server.name
   "Group" .Values.server.group
