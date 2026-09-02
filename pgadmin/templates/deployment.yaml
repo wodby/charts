@@ -2,6 +2,7 @@
 {{- fail "server.passwordSecret and server.passwordKey must be configured together" -}}
 {{- end -}}
 {{- $serverPasswordEnabled := and .Values.server.enabled .Values.server.passwordSecret .Values.server.passwordKey -}}
+{{- $existingAdminResolutionEnabled := and .Values.server.enabled .Values.server.resolveExistingAdmin (empty .Values.command) (empty .Values.args) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +34,9 @@ spec:
       annotations:
         checksum/server: {{ .Values.server | toJson | sha256sum }}
         checksum/admin-password: {{ .Values.admin.password | sha256sum }}
+        {{- if $existingAdminResolutionEnabled }}
+        checksum/server-import-entrypoint: {{ .Files.Get "files/server-import-entrypoint.py" | sha256sum }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
         {{- end }}
@@ -115,6 +119,12 @@ spec:
           {{- end }}
           image: {{ include "pgadmin.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if $existingAdminResolutionEnabled }}
+          command:
+            - /venv/bin/python3
+          args:
+            - /opt/wodby/server-import-entrypoint.py
+          {{- else }}
           {{- with .Values.command }}
           command:
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
@@ -122,6 +132,7 @@ spec:
           {{- with .Values.args }}
           args:
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
           {{- end }}
           env:
             - name: PGADMIN_DEFAULT_EMAIL
@@ -196,6 +207,12 @@ spec:
               mountPath: /var/lib/pgadmin
             - name: tmp
               mountPath: /tmp
+            {{- if $existingAdminResolutionEnabled }}
+            - name: server-import-entrypoint
+              mountPath: /opt/wodby/server-import-entrypoint.py
+              subPath: server-import-entrypoint.py
+              readOnly: true
+            {{- end }}
             {{- if .Values.server.enabled }}
             - name: servers
               mountPath: /pgadmin4/servers.json
@@ -223,6 +240,12 @@ spec:
           {{- end }}
         - name: tmp
           emptyDir: {}
+        {{- if $existingAdminResolutionEnabled }}
+        - name: server-import-entrypoint
+          configMap:
+            name: {{ include "pgadmin.fullname" . }}-server-import-entrypoint
+            defaultMode: 0444
+        {{- end }}
         {{- if .Values.server.enabled }}
         - name: servers
           configMap:

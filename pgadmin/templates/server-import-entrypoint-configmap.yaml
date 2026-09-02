@@ -1,0 +1,12 @@
+{{- if and .Values.server.enabled .Values.server.resolveExistingAdmin (empty .Values.command) (empty .Values.args) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgadmin.fullname" . }}-server-import-entrypoint
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pgadmin.labels" . | nindent 4 }}
+data:
+  server-import-entrypoint.py: |
+    {{- .Files.Get "files/server-import-entrypoint.py" | nindent 4 }}
+{{- end }}
