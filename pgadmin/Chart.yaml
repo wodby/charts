@@ -2,7 +2,7 @@ apiVersion: v2
 name: pgadmin
 description: pgAdmin chart for the official pgAdmin image.
 type: application
-version: 0.3.5
+version: 0.3.6
 appVersion: "9"
 keywords:
   - pgadmin
@@ -16,4 +16,4 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Configure linked PostgreSQL servers to use the generated password file
+      description: Reuse linked PostgreSQL credentials across every accessible database

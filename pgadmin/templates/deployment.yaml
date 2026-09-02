@@ -95,7 +95,7 @@ spec:
             - name: PGPASS_PORT
               value: {{ .Values.server.port | quote }}
             - name: PGPASS_DATABASE
-              value: {{ .Values.server.maintenanceDatabase | quote }}
+              value: "*"
             - name: PGPASS_USERNAME
               value: {{ .Values.server.username | quote }}
             - name: PGPASS_PASSWORD
