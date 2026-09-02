@@ -209,6 +209,10 @@ def assert_pgadmin_linked_database_login!
   unless password_env&.dig("valueFrom", "secretKeyRef") == {"name" => secret_name, "key" => secret_key}
     raise "pgadmin pgpass init container does not read the configured password Secret"
   end
+  database_env = Array(init_container["env"]).find { |env| env["name"] == "PGPASS_DATABASE" }
+  unless database_env == {"name" => "PGPASS_DATABASE", "value" => "*"}
+    raise "pgadmin password file does not match every database accessible to the linked user"
+  end
 
   main_container = Array(pod_spec["containers"]).find { |container| container["name"] == "pgadmin" }
   unless main_container["command"] == ["/venv/bin/python3"] &&
