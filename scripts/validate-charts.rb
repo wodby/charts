@@ -231,8 +231,10 @@ def assert_pgadmin_linked_database_login!
     document["kind"] == "ConfigMap" &&
       document.dig("metadata", "name") == "#{WORKLOAD_NAME}-server-import-entrypoint"
   end
-  unless resolver&.dig("data", "server-import-entrypoint.py")&.include?("resolve_server_import_email")
-    raise "pgadmin does not render the persisted administrator resolver"
+  resolver_script = resolver&.dig("data", "server-import-entrypoint.py")
+  unless resolver_script&.include?("resolve_server_import_email") &&
+         resolver_script&.include?("refresh_pgpass")
+    raise "pgadmin does not render the persisted administrator and password-file preparation"
   end
 
   replace_servers_env = Array(main_container["env"]).find do |env|

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import importlib.util
+import stat
 import sqlite3
 import sys
 import tempfile
@@ -48,7 +49,7 @@ class ResolveServerImportEmailTest(unittest.TestCase):
     def test_missing_database_keeps_bootstrap_email(self):
         self.assertEqual(
             MODULE.resolve_server_import_email("user@domain.com", self.database_path),
-            "user@domain.com",
+            ("user@domain.com", False),
         )
 
     def test_existing_configured_user_is_preserved(self):
@@ -56,7 +57,7 @@ class ResolveServerImportEmailTest(unittest.TestCase):
 
         self.assertEqual(
             MODULE.resolve_server_import_email("user@domain.com", self.database_path),
-            "user@domain.com",
+            ("user@domain.com", True),
         )
 
     def test_single_existing_administrator_replaces_missing_bootstrap_email(self):
@@ -65,7 +66,7 @@ class ResolveServerImportEmailTest(unittest.TestCase):
 
         self.assertEqual(
             MODULE.resolve_server_import_email("user@domain.com", self.database_path),
-            "pgadmin@wodby.com",
+            ("pgadmin@wodby.com", True),
         )
         self.assertEqual(self.database_path.read_bytes(), database_before_resolution)
 
@@ -79,7 +80,7 @@ class ResolveServerImportEmailTest(unittest.TestCase):
 
         self.assertEqual(
             MODULE.resolve_server_import_email("user@domain.com", self.database_path),
-            "user@domain.com",
+            ("user@domain.com", False),
         )
 
     def test_inactive_and_external_administrators_are_not_selected(self):
@@ -93,8 +94,33 @@ class ResolveServerImportEmailTest(unittest.TestCase):
 
         self.assertEqual(
             MODULE.resolve_server_import_email("user@domain.com", self.database_path),
-            "user@domain.com",
+            ("user@domain.com", False),
         )
+
+    def test_pgpass_is_refreshed_for_existing_user(self):
+        source = Path(self.temporary_directory.name) / "source.pgpass"
+        source.write_text("postgres:5432:app:app:new-password\n")
+        storage_path = Path(self.temporary_directory.name) / "storage"
+        destination = storage_path / "pgadmin_wodby.com" / ".pgpass"
+        destination.parent.mkdir(parents=True)
+        destination.write_text("stale-password\n")
+        destination.chmod(0o644)
+
+        self.assertTrue(
+            MODULE.refresh_pgpass(source, "pgadmin@wodby.com", storage_path)
+        )
+        self.assertEqual(destination.read_bytes(), source.read_bytes())
+        self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o600)
+        self.assertEqual(list(destination.parent.glob(".pgpass.tmp-*")), [])
+
+    def test_missing_pgpass_source_is_ignored(self):
+        source = Path(self.temporary_directory.name) / "missing.pgpass"
+        storage_path = Path(self.temporary_directory.name) / "storage"
+
+        self.assertFalse(
+            MODULE.refresh_pgpass(source, "pgadmin@wodby.com", storage_path)
+        )
+        self.assertFalse(storage_path.exists())
 
 
 if __name__ == "__main__":

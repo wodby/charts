@@ -4,7 +4,7 @@ Deploys the official pgAdmin image with a restricted non-root security context, 
 
 The chart generates an administrator password when one is not supplied. Wodby supplies a stable generated password through the service manifest. Database passwords are never written to `servers.json`.
 
-When a local pgAdmin configuration database already exists, the chart checks which internal administrator should receive the generated server definitions before running the official entrypoint. If the configured bootstrap email is absent and there is exactly one active internal administrator, the chart uses that existing account for server import without renaming or otherwise modifying the user. This preserves server provisioning for configuration volumes created with an older administrator email. Custom `command` or `args` values disable this compatibility behavior.
+When a local pgAdmin configuration database already exists, the chart checks which internal administrator should receive the generated server definitions before running the official entrypoint. If the configured bootstrap email is absent and there is exactly one active internal administrator, the chart uses that existing account for server import without renaming or otherwise modifying the user. It also refreshes that account's `.pgpass` file on every startup so linked database password changes and upgrades of older volumes preserve automatic login. Custom `command` or `args` values disable this compatibility behavior.
 
 Set `server.passwordSecret` and `server.passwordKey` together to enable automatic login for the registered PostgreSQL server. An init container reads the password from that Kubernetes Secret and creates the `.pgpass` file consumed through pgAdmin's `PGPASS_FILE` mechanism.
 
