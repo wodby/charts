@@ -40,3 +40,11 @@ test('invalid inputs fail before publication without disclosing their values',()
  assert.throws(()=>generate({...input,REALTIME_DB_ENC_KEY:'e'.repeat(17)}),/16 characters/);
  assert.throws(()=>generate({...input,POSTGRES_HOST:'db/evil'}),/Invalid database address/);
 });
+
+test('Auth has exactly one signing key and consumers receive verification-only keys',()=>{
+ const b=generate(input),privateKeys=JSON.parse(b.JWT_KEYS),publicKeys=JSON.parse(b.JWT_JWKS).keys;
+ const signing=privateKeys.filter(k=>k.key_ops.includes('sign'));
+ assert.equal(signing.length,1);assert.equal(signing[0].alg,'ES256');assert.ok(signing[0].d);
+ for(const key of publicKeys){assert.deepEqual(key.key_ops,['verify']);assert.equal(key.d,undefined);}
+ assert.equal(verify(b.ANON_KEY_ASYMMETRIC,publicKeys[0],true).role,'anon');
+});

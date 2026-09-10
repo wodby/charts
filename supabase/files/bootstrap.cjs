@@ -14,7 +14,7 @@ function signingKey(seed) {
   const point = ecdh.getPublicKey();
   const kid = crypto.createHash('sha256').update(point).digest('hex').slice(0, 24);
   return { kty: 'EC', crv: 'P-256', x: point.subarray(1,33).toString('base64url'),
-    y: point.subarray(33).toString('base64url'), d: scalar.toString('base64url'), kid, alg: 'ES256', use: 'sig' };
+    y: point.subarray(33).toString('base64url'), d: scalar.toString('base64url'), kid, alg: 'ES256', use: 'sig', key_ops: ['sign', 'verify'] };
 }
 
 // API role tokens are long-lived credentials. Rotation replaces their source keys explicitly.
@@ -45,7 +45,8 @@ function generate(c) {
   if (!/^[A-Za-z0-9_-]+$/.test(c.DASHBOARD_USERNAME)) throw new Error('Invalid Studio username');
   const privateJwk = signingKey(c.SIGNING_SEED);
   const {d, ...publicJwk} = privateJwk;
-  const symmetric = {kty:'oct',k:Buffer.from(c.JWT_SECRET).toString('base64url'),alg:'HS256'};
+  publicJwk.key_ops = ['verify'];
+  const symmetric = {kty:'oct',k:Buffer.from(c.JWT_SECRET).toString('base64url'),alg:'HS256',use:'sig',key_ops:['verify']};
   const result = {...c, JWT_KEYS:JSON.stringify([privateJwk,symmetric]), JWT_JWKS:JSON.stringify({keys:[publicJwk,symmetric]}),
     ANON_KEY:jwt('anon',c.JWT_SECRET), SERVICE_ROLE_KEY:jwt('service_role',c.JWT_SECRET),
     ANON_KEY_ASYMMETRIC:jwt('anon',privateJwk,true), SERVICE_ROLE_KEY_ASYMMETRIC:jwt('service_role',privateJwk,true),
