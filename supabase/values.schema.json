@@ -1,0 +1,933 @@
+{
+  "type": "object",
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "nameOverride": {
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "imagePullSecrets": {
+      "type": "array"
+    },
+    "commonLabels": {
+      "type": "object"
+    },
+    "commonAnnotations": {
+      "type": "object"
+    },
+    "podLabels": {
+      "type": "object"
+    },
+    "podAnnotations": {
+      "type": "object"
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "rollingUpdate": {
+          "type": "object",
+          "properties": {
+            "maxUnavailable": {
+              "type": "integer"
+            },
+            "maxSurge": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "minReadySeconds": {
+      "type": "integer"
+    },
+    "progressDeadlineSeconds": {
+      "type": "integer"
+    },
+    "terminationGracePeriodSeconds": {
+      "type": "integer"
+    },
+    "credentials": {
+      "type": "object",
+      "properties": {
+        "POSTGRES_HOST": {
+          "type": "string"
+        },
+        "POSTGRES_PORT": {
+          "type": "string"
+        },
+        "POSTGRES_DB": {
+          "type": "string"
+        },
+        "POSTGRES_PASSWORD": {
+          "type": "string"
+        },
+        "JWT_SECRET": {
+          "type": "string"
+        },
+        "SIGNING_SEED": {
+          "type": "string"
+        },
+        "DASHBOARD_USERNAME": {
+          "type": "string"
+        },
+        "DASHBOARD_PASSWORD": {
+          "type": "string"
+        },
+        "SUPABASE_PUBLISHABLE_KEY": {
+          "type": "string"
+        },
+        "SUPABASE_SECRET_KEY": {
+          "type": "string"
+        },
+        "SECRET_KEY_BASE": {
+          "type": "string"
+        },
+        "REALTIME_DB_ENC_KEY": {
+          "type": "string"
+        },
+        "PG_META_CRYPTO_KEY": {
+          "type": "string"
+        }
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "activeDeadlineSeconds": {
+          "type": "integer"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "publicUrl": {
+          "type": "string"
+        },
+        "siteUrl": {
+          "type": "string"
+        },
+        "additionalRedirectUrls": {
+          "type": "string"
+        },
+        "disableSignup": {
+          "type": "string"
+        },
+        "enableEmailSignup": {
+          "type": "string"
+        },
+        "emailAutoconfirm": {
+          "type": "string"
+        },
+        "jwtExpiry": {
+          "type": "string"
+        },
+        "dbSchemas": {
+          "type": "string"
+        },
+        "maxRows": {
+          "type": "string"
+        },
+        "fileSizeLimit": {
+          "type": "string"
+        },
+        "smtpSenderEmail": {
+          "type": "string"
+        },
+        "smtpSenderName": {
+          "type": "string"
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": [
+            "file",
+            "s3"
+          ]
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "s3Endpoint": {
+          "type": "string"
+        },
+        "s3ForcePathStyle": {
+          "type": "string"
+        },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "existingClaim": {
+              "type": "string"
+            },
+            "size": {
+              "type": "string"
+            },
+            "storageClass": {
+              "type": "string"
+            },
+            "labels": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "studio": {
+      "type": "object",
+      "properties": {
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "existingClaim": {
+              "type": "string"
+            },
+            "size": {
+              "type": "string"
+            },
+            "storageClass": {
+              "type": "string"
+            },
+            "labels": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        },
+        "rest": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        },
+        "realtime": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            },
+            "imgproxy": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "type": "object",
+                  "properties": {
+                    "repository": {
+                      "type": "string"
+                    },
+                    "tag": {
+                      "type": "string"
+                    },
+                    "pullPolicy": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "env": {
+                  "type": "array"
+                },
+                "resources": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "object",
+                      "properties": {
+                        "cpu": {
+                          "type": "string"
+                        },
+                        "memory": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "extraVolumeMounts": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        },
+        "studio": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string"
+                    },
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "env": {
+              "type": "array"
+            },
+            "extraVolumeMounts": {
+              "type": "array"
+            },
+            "extraVolumes": {
+              "type": "array"
+            },
+            "sidecars": {
+              "type": "array"
+            },
+            "podLabels": {
+              "type": "object"
+            },
+            "podAnnotations": {
+              "type": "object"
+            },
+            "strategy": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "progressDeadlineSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "terminationGracePeriodSeconds": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "securityContext": {
+              "type": "object"
+            },
+            "nodeSelector": {
+              "type": "object"
+            },
+            "tolerations": {
+              "type": "array"
+            },
+            "affinity": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "gateway",
+        "auth",
+        "rest",
+        "realtime",
+        "storage",
+        "meta",
+        "studio"
+      ]
+    },
+    "integrationEnv": {
+      "type": "array"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

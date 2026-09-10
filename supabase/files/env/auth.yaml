@@ -1,0 +1,69 @@
+- name: GOTRUE_API_HOST
+  value: 0.0.0.0
+- name: GOTRUE_API_PORT
+  value: '9999'
+- name: API_EXTERNAL_URL
+  value: '{{ trimSuffix "/" .Values.config.publicUrl }}/auth/v1'
+- name: GOTRUE_DB_DRIVER
+  value: postgres
+- name: GOTRUE_DB_DATABASE_URL
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: AUTH_DATABASE_URL
+- name: GOTRUE_SITE_URL
+  value: '{{ .Values.config.siteUrl }}'
+- name: GOTRUE_URI_ALLOW_LIST
+  value: '{{ .Values.config.additionalRedirectUrls }}'
+- name: GOTRUE_DISABLE_SIGNUP
+  value: '{{ .Values.config.disableSignup }}'
+- name: GOTRUE_JWT_ADMIN_ROLES
+  value: service_role
+- name: GOTRUE_JWT_AUD
+  value: authenticated
+- name: GOTRUE_JWT_DEFAULT_GROUP_NAME
+  value: authenticated
+- name: GOTRUE_JWT_EXP
+  value: '{{ .Values.config.jwtExpiry }}'
+- name: GOTRUE_JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_SECRET
+- name: GOTRUE_JWT_ISSUER
+  value: '{{ trimSuffix "/" .Values.config.publicUrl }}/auth/v1'
+- name: GOTRUE_EXTERNAL_EMAIL_ENABLED
+  value: '{{ .Values.config.enableEmailSignup }}'
+- name: GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED
+  value: 'false'
+- name: GOTRUE_MAILER_AUTOCONFIRM
+  value: '{{ .Values.config.emailAutoconfirm }}'
+- name: GOTRUE_SMTP_ADMIN_EMAIL
+  value: '{{ .Values.config.smtpSenderEmail }}'
+- name: GOTRUE_SMTP_HOST
+  value: ''
+- name: GOTRUE_SMTP_PORT
+  value: '587'
+- name: GOTRUE_SMTP_USER
+  value: ''
+- name: GOTRUE_SMTP_PASS
+  value: ''
+- name: GOTRUE_SMTP_SENDER_NAME
+  value: '{{ .Values.config.smtpSenderName }}'
+- name: GOTRUE_MAILER_URLPATHS_INVITE
+  value: /auth/v1/verify
+- name: GOTRUE_MAILER_URLPATHS_CONFIRMATION
+  value: /auth/v1/verify
+- name: GOTRUE_MAILER_URLPATHS_RECOVERY
+  value: /auth/v1/verify
+- name: GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE
+  value: /auth/v1/verify
+- name: GOTRUE_EXTERNAL_PHONE_ENABLED
+  value: 'false'
+- name: GOTRUE_SMS_AUTOCONFIRM
+  value: 'false'
+- name: GOTRUE_JWT_KEYS
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_KEYS

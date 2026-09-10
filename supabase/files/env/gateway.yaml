@@ -1,0 +1,42 @@
+- name: ANON_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: ANON_KEY
+- name: SERVICE_ROLE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SERVICE_ROLE_KEY
+- name: SUPABASE_PUBLISHABLE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SUPABASE_PUBLISHABLE_KEY
+- name: SUPABASE_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SUPABASE_SECRET_KEY
+- name: ANON_KEY_ASYMMETRIC
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: ANON_KEY_ASYMMETRIC
+- name: SERVICE_ROLE_KEY_ASYMMETRIC
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SERVICE_ROLE_KEY_ASYMMETRIC
+- name: SUPABASE_PUBLIC_URL
+  value: '{{ .Values.config.publicUrl }}'
+- name: DASHBOARD_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: DASHBOARD_USERNAME
+- name: DASHBOARD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: DASHBOARD_PASSWORD

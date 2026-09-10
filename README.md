@@ -44,6 +44,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | solr            | wodby/solr                                  | 0.2.1   |
 | stateful        | configurable                                | 0.2.0   |
 | stateless       | configurable                                | 0.2.1   |
+| supabase        | Supabase component bundle                   | 0.1.0   |
 | tailscale       | tailscale/tailscale                         | 0.2.0   |
 | valkey          | wodby/valkey                                | 0.2.0   |
 | varnish         | wodby/varnish                               | 0.3.2   |

@@ -1,0 +1,78 @@
+- name: HOSTNAME
+  value: 0.0.0.0
+- name: STUDIO_PG_META_URL
+  value: http://{{ include "supabase.componentName" (dict "root" . "name" "meta") }}:8080
+- name: POSTGRES_PORT
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: POSTGRES_PORT
+- name: POSTGRES_HOST
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: POSTGRES_HOST
+- name: POSTGRES_DB
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: POSTGRES_DB
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: POSTGRES_PASSWORD
+- name: POSTGRES_USER_READ_WRITE
+  value: postgres
+- name: PG_META_CRYPTO_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: PG_META_CRYPTO_KEY
+- name: PGRST_DB_SCHEMAS
+  value: '{{ .Values.config.dbSchemas }}'
+- name: PGRST_DB_MAX_ROWS
+  value: '{{ .Values.config.maxRows }}'
+- name: PGRST_DB_EXTRA_SEARCH_PATH
+  value: public
+- name: DEFAULT_ORGANIZATION_NAME
+  value: Wodby
+- name: DEFAULT_PROJECT_NAME
+  value: Supabase
+- name: OPENAI_API_KEY
+  value: ''
+- name: SUPABASE_URL
+  value: http://{{ include "supabase.componentName" (dict "root" . "name" "gateway") }}:8000
+- name: SUPABASE_PUBLIC_URL
+  value: '{{ .Values.config.publicUrl }}'
+- name: SUPABASE_ANON_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: ANON_KEY
+- name: SUPABASE_SERVICE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SERVICE_ROLE_KEY
+- name: AUTH_JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_SECRET
+- name: SUPABASE_PUBLISHABLE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SUPABASE_PUBLISHABLE_KEY
+- name: SUPABASE_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SUPABASE_SECRET_KEY
+- name: ENABLED_FEATURES_LOGS_ALL
+  value: 'false'
+- name: SNIPPETS_MANAGEMENT_FOLDER
+  value: /app/snippets
+- name: EDGE_FUNCTIONS_MANAGEMENT_FOLDER
+  value: /app/edge-functions

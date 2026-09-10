@@ -1,0 +1,245 @@
+replicaCount: 1
+nameOverride: ''
+fullnameOverride: ''
+imagePullSecrets: []
+commonLabels: {}
+commonAnnotations: {}
+podLabels: {}
+podAnnotations: {}
+serviceAccount:
+  create: true
+  name: ''
+  annotations: {}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+minReadySeconds: 10
+progressDeadlineSeconds: 900
+terminationGracePeriodSeconds: 30
+credentials:
+  POSTGRES_HOST: ''
+  POSTGRES_PORT: '5432'
+  POSTGRES_DB: postgres
+  POSTGRES_PASSWORD: ''
+  JWT_SECRET: ''
+  SIGNING_SEED: ''
+  DASHBOARD_USERNAME: supabase
+  DASHBOARD_PASSWORD: ''
+  SUPABASE_PUBLISHABLE_KEY: ''
+  SUPABASE_SECRET_KEY: ''
+  SECRET_KEY_BASE: ''
+  REALTIME_DB_ENC_KEY: ''
+  PG_META_CRYPTO_KEY: ''
+bootstrap:
+  image: supabase/studio:2026.09.07-sha-7996410
+  activeDeadlineSeconds: 180
+config:
+  publicUrl: http://localhost:8000
+  siteUrl: http://localhost:3000
+  additionalRedirectUrls: ''
+  disableSignup: 'false'
+  enableEmailSignup: 'true'
+  emailAutoconfirm: 'false'
+  jwtExpiry: '3600'
+  dbSchemas: public,storage,graphql_public
+  maxRows: '1000'
+  fileSizeLimit: '52428800'
+  smtpSenderEmail: ''
+  smtpSenderName: Supabase
+storage:
+  backend: file
+  bucket: stub
+  region: local
+  s3Endpoint: ''
+  s3ForcePathStyle: 'true'
+  persistence:
+    enabled: true
+    existingClaim: ''
+    size: 10Gi
+    storageClass: ''
+    labels: {}
+studio:
+  persistence:
+    enabled: true
+    existingClaim: ''
+    size: 1Gi
+    storageClass: ''
+    labels: {}
+components:
+  gateway:
+    image:
+      repository: envoyproxy/envoy
+      tag: v1.39.1
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  auth:
+    image:
+      repository: supabase/gotrue
+      tag: v2.196.0
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  rest:
+    image:
+      repository: postgrest/postgrest
+      tag: v14.17
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  realtime:
+    image:
+      repository: supabase/realtime
+      tag: v2.134.10
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  storage:
+    image:
+      repository: supabase/storage-api
+      tag: v1.74.0
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy:
+      type: Recreate
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    imgproxy:
+      image:
+        repository: darthsim/imgproxy
+        tag: v3.31.4
+        pullPolicy: IfNotPresent
+      env: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      extraVolumeMounts: []
+  meta:
+    image:
+      repository: supabase/postgres-meta
+      tag: v0.99.0
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  studio:
+    image:
+      repository: supabase/studio
+      tag: 2026.09.07-sha-7996410
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    env: []
+    extraVolumeMounts: []
+    extraVolumes: []
+    sidecars: []
+    podLabels: {}
+    podAnnotations: {}
+    strategy:
+      type: Recreate
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+integrationEnv: []
