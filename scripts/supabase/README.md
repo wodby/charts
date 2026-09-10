@@ -5,6 +5,7 @@ These tests exercise the real Supabase APIs against the released `wodby/supabase
 Requirements: Docker, kind, Helm, kubectl, Node.js 24 and Python 3.13 with `PyYAML==6.0.2` and `requests==2.32.5`. Allow enough free Docker disk space for Kubernetes, the component images and three small database volumes. S3 tests use an isolated MinIO fixture; no external bucket or credentials are needed.
 
 ```sh
+helm dependency build stateful
 state=$(mktemp -d)
 kind create cluster --name supabase-acceptance --kubeconfig "$state/kubeconfig" --wait 120s
 python3 scripts/supabase/acceptance.py \
