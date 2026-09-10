@@ -1,0 +1,51 @@
+- name: ANON_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: ANON_KEY
+- name: SERVICE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: SERVICE_ROLE_KEY
+- name: POSTGREST_URL
+  value: http://{{ include "supabase.componentName" (dict "root" . "name" "rest") }}:3000
+- name: AUTH_JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_SECRET
+- name: DATABASE_URL
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: STORAGE_DATABASE_URL
+- name: STORAGE_PUBLIC_URL
+  value: '{{ .Values.config.publicUrl }}'
+- name: REQUEST_ALLOW_X_FORWARDED_PATH
+  value: 'true'
+- name: FILE_SIZE_LIMIT
+  value: '{{ .Values.config.fileSizeLimit }}'
+- name: STORAGE_BACKEND
+  value: '{{ .Values.storage.backend }}'
+- name: GLOBAL_S3_BUCKET
+  value: '{{ .Values.storage.bucket }}'
+- name: FILE_STORAGE_BACKEND_PATH
+  value: /var/lib/storage
+- name: TENANT_ID
+  value: stub
+- name: REGION
+  value: '{{ .Values.storage.region }}'
+- name: ENABLE_IMAGE_TRANSFORMATION
+  value: 'true'
+- name: IMGPROXY_URL
+  value: http://127.0.0.1:5001
+- name: JWT_JWKS
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_JWKS
+- name: GLOBAL_S3_ENDPOINT
+  value: '{{ .Values.storage.s3Endpoint }}'
+- name: GLOBAL_S3_FORCE_PATH_STYLE
+  value: '{{ .Values.storage.s3ForcePathStyle }}'

@@ -1,0 +1,194 @@
+{{- $root := . }}
+{{- $ports := dict "gateway" 8000 "auth" 9999 "rest" 3000 "realtime" 4000 "storage" 5000 "meta" 8080 "studio" 3000 }}
+{{- range $component, $c := .Values.components }}
+{{- $name := include "supabase.componentName" (dict "root" $root "name" $component) }}
+{{- $base := include "supabase.fullname" $root }}
+{{- $env := tpl ($root.Files.Get (printf "files/env/%s.yaml" $component)) $root | fromYamlArray }}
+{{- $extra := include "supabase.componentEnv" (dict "root" $root "name" $component) | fromYamlArray }}
+{{- $extra = concat $extra $c.env }}
+{{- $policy := $root.Values.strategy }}
+{{- if $c.strategy }}{{- $policy = $c.strategy }}{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "supabase.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    {{- with $root.Values.commonLabels }}{{ toYaml . | nindent 4 }}{{- end }}
+  annotations: {{ toYaml $root.Values.commonAnnotations | nindent 4 }}
+spec:
+  replicas: {{ $root.Values.replicaCount }}
+  minReadySeconds: {{ if ne $c.minReadySeconds nil }}{{ $c.minReadySeconds }}{{ else }}{{ $root.Values.minReadySeconds }}{{ end }}
+  progressDeadlineSeconds: {{ if ne $c.progressDeadlineSeconds nil }}{{ $c.progressDeadlineSeconds }}{{ else }}{{ $root.Values.progressDeadlineSeconds }}{{ end }}
+  strategy:
+    type: {{ $policy.type }}
+    {{- if eq $policy.type "RollingUpdate" }}
+    rollingUpdate: {{ toYaml $policy.rollingUpdate | nindent 6 }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "supabase.name" $root }}
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      app.kubernetes.io/component: {{ $component }}
+  template:
+    metadata:
+      labels:
+        {{- include "supabase.labels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $component }}
+        {{- with $root.Values.commonLabels }}{{ toYaml . | nindent 8 }}{{- end }}
+        {{- with $root.Values.podLabels }}{{ toYaml . | nindent 8 }}{{- end }}
+        {{- with $c.podLabels }}{{ toYaml . | nindent 8 }}{{- end }}
+      annotations:
+        checksum/integration-env: {{ $root.Values.integrationEnv | toJson | sha256sum }}
+        checksum/credentials: {{ include "supabase.sourceHash" $root | quote }}
+        checksum/config: {{ printf "%s:%s" ($root.Values.config | toJson) ($root.Values.storage | toJson) | sha256sum }}
+        checksum/gateway: {{ printf "%s:%s:%s" ($root.Files.Get "files/lds.template.yaml") ($root.Files.Get "files/cds.yaml") ($root.Files.Get "files/gateway.cjs") | sha256sum }}
+        {{- with $root.Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{- end }}
+        {{- with $c.podAnnotations }}{{ toYaml . | nindent 8 }}{{- end }}
+    spec:
+      serviceAccountName: {{ include "supabase.serviceAccount" $root }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: {{ if ne $c.terminationGracePeriodSeconds nil }}{{ $c.terminationGracePeriodSeconds }}{{ else }}{{ $root.Values.terminationGracePeriodSeconds }}{{ end }}
+      imagePullSecrets: {{ toYaml $root.Values.imagePullSecrets | nindent 8 }}
+      {{- if eq $component "realtime" }}
+      hostname: realtime-dev
+      {{- end }}
+      initContainers:
+        - name: credentials-ready
+          image: {{ $root.Values.bootstrap.image | quote }}
+          command:
+            - node
+            - -e
+            - >-
+              const fs=require('node:fs'); const until=Date.now()+300000;
+              const check=()=>{let value='';try{value=fs.readFileSync('/ready/ready','utf8')}catch{}
+              if(value===process.env.EXPECTED_HASH)process.exit(0);
+              if(Date.now()>until){console.error('Credentials were not prepared before startup');process.exit(1)}
+              setTimeout(check,1000)};check();
+          env:
+            - name: EXPECTED_HASH
+              value: {{ include "supabase.sourceHash" $root | quote }}
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          volumeMounts:
+            - {name: credentials-ready, mountPath: /ready, readOnly: true}
+        {{- if eq $component "gateway" }}
+        - name: gateway-config
+          image: {{ $root.Values.bootstrap.image | quote }}
+          command: [node, /templates/gateway.cjs]
+          env: {{ include "supabase.env" (dict "defaults" $env "extra" $extra) | nindent 12 }}
+          volumeMounts:
+            - {name: gateway-templates, mountPath: /templates, readOnly: true}
+            - {name: gateway-config, mountPath: /etc/envoy}
+        {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: {{ include "supabase.image" $c.image | quote }}
+          imagePullPolicy: {{ $c.image.pullPolicy }}
+          securityContext: {{ toYaml $c.securityContext | nindent 12 }}
+          resources: {{ toYaml $c.resources | nindent 12 }}
+          env: {{ include "supabase.env" (dict "defaults" $env "extra" $extra) | nindent 12 }}
+          {{- if eq $component "gateway" }}
+          command: [envoy]
+          args: [-c, /etc/envoy/envoy.yaml]
+          {{- end }}
+          ports:
+            - {name: http, containerPort: {{ get $ports $component }}}
+            {{- if eq $component "rest" }}
+            - {name: admin, containerPort: 3001}
+            {{- end }}
+          startupProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            {{- if eq $component "auth" }}
+            httpGet: {path: /health, port: http}
+            {{- else if eq $component "rest" }}
+            httpGet: {path: /ready, port: admin}
+            {{- else if eq $component "storage" }}
+            httpGet: {path: /status, port: http}
+            {{- else if eq $component "studio" }}
+            httpGet: {path: /api/platform/profile, port: http}
+            {{- else }}
+            tcpSocket: {port: http}
+            {{- end }}
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 15
+            failureThreshold: 6
+          volumeMounts:
+            {{- if eq $component "gateway" }}
+            - {name: gateway-config, mountPath: /etc/envoy, readOnly: true}
+            {{- else if eq $component "storage" }}
+            - {name: data, mountPath: /var/lib/storage}
+            {{- else if eq $component "studio" }}
+            - {name: data, mountPath: /app/snippets}
+            - {name: functions, mountPath: /app/edge-functions, readOnly: true}
+            {{- end }}
+            {{- with $c.extraVolumeMounts }}{{ toYaml . | nindent 12 }}{{- end }}
+        {{- if eq $component "storage" }}
+        - name: imgproxy
+          image: {{ include "supabase.image" $c.imgproxy.image | quote }}
+          imagePullPolicy: {{ $c.imgproxy.image.pullPolicy }}
+          resources: {{ toYaml $c.imgproxy.resources | nindent 12 }}
+          env:
+            {{- $defaults := list (dict "name" "IMGPROXY_BIND" "value" ":5001") (dict "name" "IMGPROXY_LOCAL_FILESYSTEM_ROOT" "value" "/") (dict "name" "IMGPROXY_USE_ETAG" "value" "true") (dict "name" "IMGPROXY_AUTO_WEBP" "value" "true") (dict "name" "IMGPROXY_MAX_SRC_RESOLUTION" "value" "16.8") }}
+            {{- include "supabase.env" (dict "defaults" $defaults "extra" $c.imgproxy.env) | nindent 12 }}
+          ports: [{name: imgproxy, containerPort: 5001}]
+          readinessProbe:
+            tcpSocket: {port: imgproxy}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/storage, readOnly: true}
+            {{- with $c.imgproxy.extraVolumeMounts }}{{ toYaml . | nindent 12 }}{{- end }}
+        {{- end }}
+        {{- with $c.sidecars }}{{ toYaml . | nindent 8 }}{{- end }}
+      volumes:
+        - name: credentials-ready
+          secret:
+            secretName: {{ $base }}-credentials
+            optional: true
+            items: [{key: ready, path: ready}]
+        {{- if eq $component "gateway" }}
+        - name: gateway-templates
+          configMap: {name: {{ $base }}-gateway}
+        - name: gateway-config
+          emptyDir: {medium: Memory}
+        {{- else if or (eq $component "storage") (eq $component "studio") }}
+        - name: data
+          {{- $p := (index $root.Values $component).persistence }}
+          {{- if $p.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-%s" $base $component) $p.existingClaim }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- if eq $component "studio" }}
+        - name: functions
+          emptyDir: {}
+        {{- end }}
+        {{- end }}
+        {{- with $c.extraVolumes }}{{ toYaml . | nindent 8 }}{{- end }}
+      nodeSelector: {{ toYaml $c.nodeSelector | nindent 8 }}
+      tolerations: {{ toYaml $c.tolerations | nindent 8 }}
+      affinity: {{ toYaml $c.affinity | nindent 8 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels: {{- include "supabase.labels" $root | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "supabase.name" $root }}
+    app.kubernetes.io/instance: {{ $root.Release.Name }}
+    app.kubernetes.io/component: {{ $component }}
+  ports:
+    - {name: http, port: {{ get $ports $component }}, targetPort: http}
+{{- end }}

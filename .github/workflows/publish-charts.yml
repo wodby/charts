@@ -13,6 +13,7 @@ on:
       - '**/values.schema.json'
       - '**/values.yaml'
       - '**/templates/**'
+      - 'supabase/tests/**'
       - 'scripts/**'
       - '.github/workflows/**'
   pull_request:
@@ -26,6 +27,7 @@ on:
       - '**/values.schema.json'
       - '**/values.yaml'
       - '**/templates/**'
+      - 'supabase/tests/**'
       - 'AGENTS.md'
       - 'README.md'
       - 'scripts/**'
@@ -68,6 +70,17 @@ jobs:
 
       - name: Validate charts
         run: ruby scripts/validate-charts.rb
+
+      - name: Set up Node for Supabase credential tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Test Supabase credentials and workload rendering
+        run: |
+          python3 -m pip install 'PyYAML==6.0.2'
+          node --test supabase/tests/bootstrap.test.cjs
+          python3 supabase/tests/render_test.py
 
       - name: Test pgAdmin persisted administrator resolution
         run: python3 scripts/test_pgadmin_server_import_user.py

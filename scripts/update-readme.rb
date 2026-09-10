@@ -8,6 +8,7 @@ IMAGE_OVERRIDES = {
   "common" => "",
   "stateful" => "configurable",
   "stateless" => "configurable",
+  "supabase" => "Supabase component bundle",
 }.freeze
 
 def load_yaml(path)

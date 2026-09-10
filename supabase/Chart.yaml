@@ -1,0 +1,9 @@
+apiVersion: v2
+name: supabase
+description: Self-hosted Supabase APIs and Studio with an external Supabase PostgreSQL database
+type: application
+version: 0.1.0
+appVersion: self-hosted/v0.8.1
+annotations:
+  artifacthub.io/changes: "- kind: added\n  description: Run Supabase APIs and Studio with persistent credentials\
+    \ and external PostgreSQL\n"

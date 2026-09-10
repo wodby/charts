@@ -1,0 +1,98 @@
+{{- $name := include "supabase.fullname" . }}
+# Helm owns this Secret; the bootstrap Job owns its data keys. Do not declare generated keys here.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $name }}-credentials
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $name }}-input
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+type: Opaque
+data:
+  credentials.json: {{ .Values.credentials | toJson | b64enc | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-bootstrap
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+data:
+  bootstrap.cjs: {{ .Files.Get "files/bootstrap.cjs" | quote }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}-bootstrap
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}-bootstrap
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [{{ printf "%s-credentials" $name | quote }}]
+    verbs: [patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}-bootstrap
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}-bootstrap
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}-bootstrap
+    namespace: {{ .Release.Namespace }}
+{{- if gt (int .Values.replicaCount) 0 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $name }}-bootstrap-{{ .Release.Revision }}
+  labels: {{- include "supabase.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: {{ .Values.bootstrap.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: bootstrap
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ $name }}-bootstrap
+      imagePullSecrets: {{ toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: bootstrap
+          image: {{ .Values.bootstrap.image | quote }}
+          command: [node, /scripts/bootstrap.cjs]
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          env:
+            - name: POD_NAMESPACE
+              valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+            - name: SECRET_NAME
+              value: {{ $name }}-credentials
+            - name: SOURCE_HASH
+              value: {{ include "supabase.sourceHash" . | quote }}
+          volumeMounts:
+            - {name: script, mountPath: /scripts, readOnly: true}
+            - {name: input, mountPath: /input, readOnly: true}
+      volumes:
+        - name: script
+          configMap: {name: {{ $name }}-bootstrap}
+        - name: input
+          secret: {secretName: {{ $name }}-input}
+{{- end }}

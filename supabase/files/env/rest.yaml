@@ -1,0 +1,31 @@
+- name: PGRST_DB_URI
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: REST_DATABASE_URL
+- name: PGRST_DB_SCHEMAS
+  value: '{{ .Values.config.dbSchemas }}'
+- name: PGRST_DB_MAX_ROWS
+  value: '{{ .Values.config.maxRows }}'
+- name: PGRST_DB_EXTRA_SEARCH_PATH
+  value: public
+- name: PGRST_DB_ANON_ROLE
+  value: anon
+- name: PGRST_ADMIN_SERVER_PORT
+  value: '3001'
+- name: PGRST_ADMIN_SERVER_HOST
+  value: 0.0.0.0
+- name: PGRST_JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_JWKS
+- name: PGRST_DB_USE_LEGACY_GUCS
+  value: 'false'
+- name: PGRST_APP_SETTINGS_JWT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: '{{ include "supabase.fullname" . }}-credentials'
+      key: JWT_SECRET
+- name: PGRST_APP_SETTINGS_JWT_EXP
+  value: '{{ .Values.config.jwtExpiry }}'
