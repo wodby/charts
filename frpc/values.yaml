@@ -10,7 +10,7 @@ global:
 image:
   registry: docker.io
   repository: wodby/frp
-  tag: "0.69-0.3.1"
+  tag: "0.69-r0"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []

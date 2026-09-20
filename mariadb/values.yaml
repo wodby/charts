@@ -92,7 +92,7 @@ serviceBindings:
 image:
   registry: docker.io
   repository: wodby/mariadb
-  tag: 11.2
+  tag: "11.4-r0"
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'

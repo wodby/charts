@@ -12,7 +12,7 @@ image:
   repository: wodby/valkey
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "9.0-r0"
   digest: ""
   pullSecrets: []
 

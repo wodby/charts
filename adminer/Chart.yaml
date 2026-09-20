@@ -2,8 +2,8 @@ apiVersion: v2
 name: adminer
 description: Adminer chart for the Wodby Adminer image.
 type: application
-version: 0.3.1
-appVersion: "6"
+version: 0.3.2
+appVersion: "6.1.0"
 keywords:
   - adminer
   - database
@@ -13,5 +13,5 @@ dependencies:
     version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Drain service endpoints before Adminer receives its graceful stop signal
+    - kind: changed
+      description: Pin the default image to wodby/adminer:6-r0

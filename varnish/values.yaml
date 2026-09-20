@@ -74,8 +74,8 @@ diagnosticMode:
 ##
 image:
   registry: docker.io
-  repository: wodby/varnish
-  tag: 6.0
+  repository: wodby/vinyl
+  tag: "6.0-r0"
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'

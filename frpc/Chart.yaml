@@ -2,12 +2,10 @@ name: frpc
 apiVersion: v2
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Authenticate FRPC heartbeat and work connections when using OIDC
     - kind: changed
-      description: Update the default FRP image to 0.69-0.3.1
+      description: Pin the default image to wodby/frp:0.69-r0
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
-version: 0.3.1
+version: 0.3.2

@@ -75,7 +75,7 @@ diagnosticMode:
 image:
   registry: docker.io
   repository: wodby/nginx
-  tag: 1.25
+  tag: "1.30-r0"
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'

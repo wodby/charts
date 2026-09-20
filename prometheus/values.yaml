@@ -11,7 +11,7 @@ image:
   registry: docker.io
   repository: wodby/prometheus
   pullPolicy: IfNotPresent
-  tag: "3.13"
+  tag: "3.13-r0"
   digest: ""
   pullSecrets: []
 

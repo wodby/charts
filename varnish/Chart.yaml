@@ -1,7 +1,7 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
+    - kind: changed
+      description: Pin the default image to wodby/vinyl:6.0-r0
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
@@ -10,4 +10,4 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: varnish
-version: 0.3.2
+version: 0.4.0
