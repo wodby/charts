@@ -2,14 +2,12 @@ annotations:
   category: Database
   licenses: Apache-2.0
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent StatefulSet update readiness and graceful shutdown settings
     - kind: changed
-      description: Wait 10 seconds after readiness before continuing rolling updates
+      description: Pin the default image to wodby/mariadb:11.4-r0
 apiVersion: v2
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: mariadb
-version: 0.3.0
+version: 0.4.0

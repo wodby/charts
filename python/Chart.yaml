@@ -15,11 +15,11 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.1
+version: 0.2.2
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
+    - kind: changed
+      description: Pin the default image to wodby/python:3.14-r0
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

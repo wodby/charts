@@ -14,42 +14,42 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | Chart           | Image                                       | Version |
 | --------------- | ------------------------------------------- | ------- |
 | 3xui            | ghcr.io/mhsanaei/3x-ui                      | 0.2.0   |
-| adminer         | wodby/adminer                               | 0.3.1   |
+| adminer         | wodby/adminer                               | 0.3.2   |
 | common          |                                             | 1.0.0   |
 | distribution    | registry                                    | 0.2.2   |
-| frpc            | wodby/frp                                   | 0.3.1   |
-| frps            | wodby/frp                                   | 0.2.0   |
-| go              | wodby/go                                    | 0.2.1   |
+| frpc            | wodby/frp                                   | 0.3.2   |
+| frps            | wodby/frp                                   | 0.2.1   |
+| go              | wodby/go                                    | 0.2.2   |
 | gotenberg       | gotenberg/gotenberg                         | 0.2.2   |
-| httpd           | wodby/apache                                | 0.3.2   |
+| httpd           | wodby/apache                                | 0.3.3   |
 | mailpit         | axllent/mailpit                             | 0.3.0   |
-| mariadb         | wodby/mariadb                               | 0.3.0   |
-| memcached       | wodby/memcached                             | 0.2.0   |
+| mariadb         | wodby/mariadb                               | 0.4.0   |
+| memcached       | wodby/memcached                             | 0.2.1   |
 | mtproxy         | telegrammessenger/proxy                     | 0.2.1   |
 | nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.4.1   |
-| nginx           | wodby/nginx                                 | 0.3.2   |
-| node            | wodby/node                                  | 0.3.1   |
-| openclaw        | wodby/openclaw                              | 0.2.0   |
-| opensmtpd       | wodby/opensmtpd                             | 0.4.0   |
+| nginx           | wodby/nginx                                 | 0.4.0   |
+| node            | wodby/node                                  | 0.3.2   |
+| openclaw        | wodby/openclaw                              | 0.2.1   |
+| opensmtpd       | wodby/opensmtpd                             | 0.4.1   |
 | pgadmin         | dpage/pgadmin4                              | 0.3.6   |
-| php-fpm         | wodby/php                                   | 0.3.2   |
+| php-fpm         | wodby/php                                   | 0.3.3   |
 | phpmyadmin      | phpmyadmin                                  | 0.2.1   |
-| postgres        | wodby/postgres                              | 0.3.1   |
-| prometheus      | wodby/prometheus                            | 0.2.1   |
-| python          | wodby/python                                | 0.2.1   |
-| rabbitmq        | wodby/rabbitmq                              | 0.3.1   |
-| redis           | wodby/redis                                 | 0.2.0   |
-| ruby            | wodby/ruby                                  | 0.2.1   |
+| postgres        | wodby/postgres                              | 0.3.2   |
+| prometheus      | wodby/prometheus                            | 0.2.2   |
+| python          | wodby/python                                | 0.2.2   |
+| rabbitmq        | wodby/rabbitmq                              | 0.3.2   |
+| redis           | wodby/redis                                 | 0.2.1   |
+| ruby            | wodby/ruby                                  | 0.2.2   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.2.0   |
-| solr            | wodby/solr                                  | 0.2.1   |
+| solr            | wodby/solr                                  | 0.2.2   |
 | stateful        | configurable                                | 0.2.0   |
 | stateless       | configurable                                | 0.2.1   |
 | supabase        | Supabase component bundle                   | 0.1.1   |
 | tailscale       | tailscale/tailscale                         | 0.2.0   |
-| valkey          | wodby/valkey                                | 0.2.0   |
-| varnish         | wodby/varnish                               | 0.3.2   |
-| vinyl           | wodby/vinyl                                 | 0.2.2   |
-| zookeeper       | wodby/zookeeper                             | 0.2.1   |
+| valkey          | wodby/valkey                                | 0.2.1   |
+| varnish         | wodby/vinyl                                 | 0.4.0   |
+| vinyl           | wodby/vinyl                                 | 0.2.3   |
+| zookeeper       | wodby/zookeeper                             | 0.2.2   |
 
 <!-- END GENERATED CHART CATALOG -->
 

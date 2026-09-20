@@ -4,8 +4,8 @@ dependencies:
   repository: oci://registry-1.docker.io/wodby
   version: 1.x.x
 name: httpd
-version: 0.3.2
+version: 0.3.3
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Omit RollingUpdate settings when the Recreate deployment strategy is selected
+    - kind: changed
+      description: Pin the default image to wodby/apache:2.4-r0

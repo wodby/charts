@@ -2,14 +2,12 @@ apiVersion: v2
 name: frps
 description: A Helm chart for the FRP reverse proxy server
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "0.69.1"
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Expose consistent Deployment rollout timing and graceful shutdown settings
     - kind: changed
-      description: Wait 10 seconds after readiness before considering replacement pods available
+      description: Pin the default image to wodby/frp:0.69-r0
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

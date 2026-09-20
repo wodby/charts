@@ -95,7 +95,7 @@ diagnosticMode:
 image:
   registry: docker.io
   repository: wodby/zookeeper
-  tag: latest
+  tag: "3.9-r0"
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images

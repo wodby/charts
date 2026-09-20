@@ -8,7 +8,7 @@ image:
   registry: docker.io
   repository: wodby/frp
   pullPolicy: IfNotPresent
-  tag: "0.69-0.3.0"
+  tag: "0.69-r0"
   digest: ""
   pullSecrets: []
 
