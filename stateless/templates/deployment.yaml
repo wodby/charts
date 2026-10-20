@@ -54,6 +54,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- if not .Values.enableServiceLinks }}
+      enableServiceLinks: false
+      {{- end }}
       {{- with .Values.initContainers }}
       initContainers:
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}

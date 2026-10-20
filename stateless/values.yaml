@@ -83,6 +83,11 @@ topologySpreadConstraints: []
 
 terminationGracePeriodSeconds: 30
 
+# Set to false to stop Kubernetes from injecting the legacy `<SERVICE>_PORT`-style variables of the namespace's
+# Services into the container. Applications that read a variable with such a name, such as vLLM's `VLLM_PORT`, need
+# this when a Service shares their name.
+enableServiceLinks: true
+
 # Deployment availability and progress timing.
 minReadySeconds: 10
 progressDeadlineSeconds: 900
