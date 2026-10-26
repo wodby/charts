@@ -76,6 +76,18 @@ extraContainers: []
 extraVolumes: []
 extraVolumeMounts: []
 
+## @param persistence.mountPath Path where the container mounts the persistence volume; no volume while it is empty
+## @param persistence.enabled Mount persistence.existingClaim; an emptyDir is mounted in its place while this is false
+## @param persistence.existingClaim Name of an existing PersistentVolumeClaim to mount when persistence is enabled
+## @param persistence.subPath Subdirectory of the volume to mount
+## @param persistence.emptyDir emptyDir settings, such as sizeLimit, for the volume used while persistence is disabled
+persistence:
+  mountPath: ""
+  enabled: false
+  existingClaim: ""
+  subPath: ""
+  emptyDir: {}
+
 nodeSelector: {}
 tolerations: []
 affinity: {}

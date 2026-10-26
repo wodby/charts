@@ -2,11 +2,11 @@ apiVersion: v2
 name: stateless
 description: Boilerplate chart for stateless services
 type: application
-version: 0.3.0
+version: 0.4.0
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Add the enableServiceLinks value to turn off Kubernetes service environment variables in pods
+      description: Add persistence values to mount an existing volume claim, or an emptyDir in its place, at one path
 appVersion: "1.0.0"
 dependencies:
   - name: common
