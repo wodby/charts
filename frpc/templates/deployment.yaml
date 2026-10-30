@@ -81,6 +81,17 @@ spec:
                 secretKeyRef:
                   name: {{ include "frpc.secretName" . }}
                   key: FRPC_AUTH_OIDC_CLIENT_SECRET
+            {{- if include "frpc.shellRouteEnabled" . }}
+            - name: FRPC_SHELL_LOCATION
+              value: {{ .Values.frpc.shellLocation | quote }}
+            - name: FRPC_SHELL_HTTP_USER
+              value: {{ .Values.frpc.shellHttpUser | quote }}
+            - name: FRPC_SHELL_HTTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "frpc.secretName" . }}
+                  key: FRPC_SHELL_HTTP_PASSWORD
+            {{- end }}
             {{- with .Values.envVars }}
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
             {{- end }}
@@ -112,7 +123,35 @@ spec:
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
+        {{- if include "frpc.shellRouteEnabled" . }}
+        - name: shell-proxy
+          image: {{ include "frpc.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          # Only the cluster CA is mounted: callers bring their own Kubernetes token.
+          volumeMounts:
+            - name: kube-root-ca
+              mountPath: /var/run/secrets/kube-ca
+              readOnly: true
+          env:
+            - name: KUBE_TOKEN_PROXY_PREFIX
+              value: {{ .Values.frpc.shellLocation | quote }}
+            - name: KUBE_TOKEN_PROXY_CA_FILE
+              value: /var/run/secrets/kube-ca/ca.crt
+          command:
+            - kube-token-proxy
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
+        {{- if include "frpc.shellRouteEnabled" . }}
+        - name: kube-root-ca
+          configMap:
+            name: kube-root-ca.crt
+            items:
+              - key: ca.crt
+                path: ca.crt
+        {{- end }}
         - name: kube-api-access
           projected:
             defaultMode: 420

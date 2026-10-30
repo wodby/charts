@@ -47,3 +47,14 @@ Name of the secret that stores frpc credentials
 {{- printf "%s-secret" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Whether the web terminal route is fully configured. Without Basic Auth the route
+would put the Kubernetes API on the internet, so a partial configuration leaves
+it off.
+*/}}
+{{- define "frpc.shellRouteEnabled" -}}
+{{- if and .Values.frpc.shellLocation .Values.frpc.shellHttpUser (or .Values.frpc.shellHttpPassword .Values.frpc.existingSecret) -}}
+true
+{{- end -}}
+{{- end -}}
