@@ -17,7 +17,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | adminer         | wodby/adminer                               | 0.3.2   |
 | common          |                                             | 1.0.0   |
 | distribution    | registry                                    | 0.2.2   |
-| frpc            | wodby/frp                                   | 0.3.2   |
+| frpc            | wodby/frp                                   | 0.4.0   |
 | frps            | wodby/frp                                   | 0.2.1   |
 | go              | wodby/go                                    | 0.2.2   |
 | gotenberg       | gotenberg/gotenberg                         | 0.2.2   |

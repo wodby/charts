@@ -2,10 +2,12 @@ name: frpc
 apiVersion: v2
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: Optional web terminal route with its own credentials, served by a proxy that holds no Kubernetes credentials
     - kind: changed
-      description: Pin the default image to wodby/frp:0.69-r0
+      description: Update the default image to wodby/frp:0.69-r1
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
-version: 0.3.2
+version: 0.4.0

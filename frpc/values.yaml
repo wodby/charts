@@ -10,7 +10,7 @@ global:
 image:
   registry: docker.io
   repository: wodby/frp
-  tag: "0.69-r0"
+  tag: "0.69-r1"
   digest: ""
   pullPolicy: IfNotPresent
   pullSecrets: []
@@ -60,6 +60,13 @@ frpc:
   egressProxyExistingSecret: ""
   apiPrefix: ""
   location: ""
+  ## Optional web terminal route. It is enabled only when the location, user and
+  ## password are all set. Requests reach the Kubernetes API with the caller's own
+  ## token, through a proxy that has no credentials and only allows pod exec.
+  ## With existingSecret, the password comes from its FRPC_SHELL_HTTP_PASSWORD key.
+  shellLocation: ""
+  shellHttpUser: ""
+  shellHttpPassword: ""
 
 verticalAutoscaling:
   enabled: false
