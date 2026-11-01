@@ -2,7 +2,7 @@
 
 These tests exercise the real Supabase APIs against the released `wodby/supabase-postgres:17-0.1.0` image in a dedicated local kind cluster. They cover Auth password login and existing sessions, REST row-level security, private Storage access, Realtime delivery, pause/resume, configuration upgrades, and coordinated database/object recovery with filesystem and S3 storage.
 
-Requirements: Docker, kind, Helm, kubectl, Node.js 24 and Python 3.13 with `PyYAML==6.0.2` and `requests==2.32.5`. Allow enough free Docker disk space for Kubernetes, the component images and three small database volumes. S3 tests use an isolated MinIO fixture; no external bucket or credentials are needed.
+Requirements: Docker, kind, Helm, kubectl, Node.js 24 and Python 3.13 with `PyYAML==6.0.2` and `requests==2.32.5`. Allow enough free Docker disk space for Kubernetes, the component images and three small database volumes. S3 tests use an isolated Versity Gateway fixture with an rclone client, both pulled anonymously from pinned public images; no external bucket or credentials are needed.
 
 ```sh
 helm dependency build stateful

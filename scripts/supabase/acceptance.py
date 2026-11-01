@@ -15,6 +15,8 @@ import requests
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+S3_ENDPOINT = 'http://versitygw:7070'
+S3_REGION = 'us-east-1'
 
 
 def command(args, *, text=None, timeout=900):
@@ -285,32 +287,44 @@ SELECT vault.create_secret('acceptance-vault-value','acceptance');
             'token': users[0]['token'], 'owner': users[0]['id'], 'id': 5 if mode == 's3' else 4}), timeout=90)
         print(f'Native database import and coordinated {mode} object recovery passed', flush=True)
 
-    def copy_s3(self, source, target):
+    def s3_client(self, name, script):
+        """Run an rclone script against the S3 fixture, configured only through its environment."""
         c = self.load('s3.json')
-        self.fixture('s3-copy', ['sh', '-ec',
-            f'mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null; mc mb local/{target}; mc mirror local/{source} local/{target}'],
-            [], c, 'quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z')
+        self.fixture(name, ['sh', '-ec', script], [], {
+            'RCLONE_CONFIG_FIXTURE_TYPE': 's3', 'RCLONE_CONFIG_FIXTURE_PROVIDER': 'Other',
+            'RCLONE_CONFIG_FIXTURE_ENDPOINT': S3_ENDPOINT, 'RCLONE_CONFIG_FIXTURE_REGION': S3_REGION,
+            'RCLONE_CONFIG_FIXTURE_FORCE_PATH_STYLE': 'true',
+            'RCLONE_CONFIG_FIXTURE_ACCESS_KEY_ID': c['ROOT_ACCESS_KEY_ID'],
+            'RCLONE_CONFIG_FIXTURE_SECRET_ACCESS_KEY': c['ROOT_SECRET_ACCESS_KEY']},
+            'ghcr.io/rclone/rclone:1.75.2')
+
+    @staticmethod
+    def make_bucket(name):
+        """Refuse an existing bucket, which rclone mkdir would otherwise accept silently."""
+        return (f'if rclone lsf --dirs-only fixture: | grep -qx "{name}/"; then echo "{name} already exists" >&2; exit 1; fi; '
+                f'rclone mkdir fixture:{name}')
+
+    def copy_s3(self, source, target):
+        self.s3_client('s3-copy', f'{self.make_bucket(target)}; rclone copy fixture:{source} fixture:{target}')
 
     def s3(self):
-        """Exercise the S3 integration with a private local MinIO fixture and a separate recovery bucket."""
-        c = {'MINIO_ROOT_USER': 'acceptance', 'MINIO_ROOT_PASSWORD': secrets.token_hex(16)}
+        """Exercise the S3 integration with a private local S3 gateway fixture and a separate recovery bucket."""
+        c = {'ROOT_ACCESS_KEY_ID': 'acceptance', 'ROOT_SECRET_ACCESS_KEY': secrets.token_hex(16)}
         self.save('s3.json', c)
-        self.apply([{'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': 'minio', 'labels': {'fixture': 'minio'}},
-            'spec': {'containers': [{'name': 'minio', 'image': 'quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z',
-                'args': ['server', '/data'], 'env': [{'name': k, 'value': v} for k, v in c.items()],
-                'readinessProbe': {'httpGet': {'path': '/minio/health/ready', 'port': 9000}},
+        self.apply([{'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': 'versitygw', 'labels': {'fixture': 'versitygw'}},
+            'spec': {'containers': [{'name': 'versitygw', 'image': 'ghcr.io/versity/versitygw:v1.10.0',
+                'args': ['--health', '/health', 'posix', '/data'], 'env': [{'name': k, 'value': v} for k, v in c.items()],
+                'readinessProbe': {'httpGet': {'path': '/health', 'port': 7070}},
                 'volumeMounts': [{'name': 'data', 'mountPath': '/data'}]}], 'volumes': [{'name': 'data', 'emptyDir': {}}]}},
-            {'apiVersion': 'v1', 'kind': 'Service', 'metadata': {'name': 'minio'},
-             'spec': {'selector': {'fixture': 'minio'}, 'ports': [{'port': 9000, 'targetPort': 9000}]}}])
-        command(self.k + ['wait', '--for=condition=Ready', 'pod/minio', '--timeout=300s'])
-        self.fixture('s3-bucket', ['sh', '-ec',
-            'mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null; mc mb local/acceptance-source'],
-            [], c, 'quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z')
+            {'apiVersion': 'v1', 'kind': 'Service', 'metadata': {'name': 'versitygw'},
+             'spec': {'selector': {'fixture': 'versitygw'}, 'ports': [{'port': 7070, 'targetPort': 7070}]}}])
+        command(self.k + ['wait', '--for=condition=Ready', 'pod/versitygw', '--timeout=300s'])
+        self.s3_client('s3-bucket', self.make_bucket('acceptance-source'))
         app = self.load('app-values.json')
-        app['storage'].update(bucket='acceptance-source', s3Endpoint='http://minio:9000')
+        app['storage'].update(bucket='acceptance-source', s3Endpoint=S3_ENDPOINT)
         app['integrationEnv'] = [{'name': k, 'value': v} for k, v in {
-            'AWS_ACCESS_KEY_ID': c['MINIO_ROOT_USER'], 'AWS_SECRET_ACCESS_KEY': c['MINIO_ROOT_PASSWORD'],
-            'REGION': 'us-east-1', 'STORAGE_BACKEND': 's3'}.items()]
+            'AWS_ACCESS_KEY_ID': c['ROOT_ACCESS_KEY_ID'], 'AWS_SECRET_ACCESS_KEY': c['ROOT_SECRET_ACCESS_KEY'],
+            'REGION': S3_REGION, 'STORAGE_BACKEND': 's3'}.items()]
         self.upgrade(app)
         self.connect()
         users = self.load('users.json')
