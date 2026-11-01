@@ -12,7 +12,7 @@
       name: '{{ include "supabase.fullname" . }}-credentials'
       key: AUTH_DATABASE_URL
 - name: GOTRUE_SITE_URL
-  value: '{{ .Values.config.siteUrl }}'
+  value: '{{ .Values.config.siteUrl | default .Values.config.publicUrl }}'
 - name: GOTRUE_URI_ALLOW_LIST
   value: '{{ .Values.config.additionalRedirectUrls }}'
 - name: GOTRUE_DISABLE_SIGNUP

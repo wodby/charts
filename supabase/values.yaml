@@ -37,7 +37,8 @@ bootstrap:
   activeDeadlineSeconds: 180
 config:
   publicUrl: http://localhost:8000
-  siteUrl: http://localhost:3000
+  # Where Auth sends users after email links and sign-in. Empty uses publicUrl.
+  siteUrl: ''
   additionalRedirectUrls: ''
   disableSignup: 'false'
   enableEmailSignup: 'true'
