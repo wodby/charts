@@ -54,6 +54,11 @@ class Render(unittest.TestCase):
   pod=storage['spec']['template']['spec'];self.assertEqual([c['name'] for c in pod['containers']],['storage','imgproxy'])
   self.assertEqual(next(v for v in pod['volumes'] if v['name']=='data')['persistentVolumeClaim']['claimName'],'objects')
   self.assertEqual(env(pod['containers'][0])['IMGPROXY_URL']['value'],'http://127.0.0.1:5001')
+ def test_site_url_falls_back_to_public_url(self):
+  site=lambda config:env(workloads(render({'config':config}))['auth']['spec']['template']['spec']['containers'][0])['GOTRUE_SITE_URL']['value']
+  self.assertEqual(site({'publicUrl':'https://api.example.com'}),'https://api.example.com')
+  self.assertEqual(site({'publicUrl':'https://api.example.com','siteUrl':''}),'https://api.example.com')
+  self.assertEqual(site({'publicUrl':'https://api.example.com','siteUrl':'https://app.example.com'}),'https://app.example.com')
  def test_env_override_no_duplicates(self):
   ws=workloads(render({'components':{'rest':{'env':[{'name':'PGRST_DB_SCHEMAS','value':'public'}]}}}))
   e=ws['rest']['spec']['template']['spec']['containers'][0]['env'];self.assertEqual(sum(v['name']=='PGRST_DB_SCHEMAS' for v in e),1)
