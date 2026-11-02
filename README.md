@@ -22,6 +22,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | go              | wodby/go                                    | 0.2.2   |
 | gotenberg       | gotenberg/gotenberg                         | 0.2.2   |
 | httpd           | wodby/apache                                | 0.3.3   |
+| java            | wodby/java                                  | 0.1.0   |
 | mailpit         | axllent/mailpit                             | 0.3.0   |
 | mariadb         | wodby/mariadb                               | 0.4.0   |
 | memcached       | wodby/memcached                             | 0.2.1   |
