@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zammad.fullname" . }}-init
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zammad.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
+    {{- end }}
+data:
+  init.sh: |
+    {{- .Files.Get "files/init.sh" | nindent 4 }}
+  setup.rb: |
+    {{- .Files.Get "files/setup.rb" | nindent 4 }}

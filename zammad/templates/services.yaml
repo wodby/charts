@@ -1,0 +1,31 @@
+{{- $root := . }}
+{{- $ports := dict "nginx" (int .Values.service.port) "railsserver" 3000 "websocket" 6042 }}
+{{- $targets := dict "nginx" "http" "railsserver" "http" "websocket" "websocket" }}
+{{- range $component := list "nginx" "railsserver" "websocket" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zammad.componentName" (dict "root" $root "name" $component) }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    {{- include "zammad.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    {{- with $root.Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+    {{- end }}
+  {{- if and (eq $component "nginx") $root.Values.service.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" $root.Values.service.annotations "context" $root) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ if eq $component "nginx" }}{{ $root.Values.service.type }}{{ else }}ClusterIP{{ end }}
+  ports:
+    - name: {{ get $targets $component }}
+      port: {{ get $ports $component }}
+      targetPort: {{ get $targets $component }}
+      protocol: TCP
+  selector:
+    {{- include "zammad.selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+{{- end }}

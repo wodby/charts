@@ -375,6 +375,40 @@ def assert_graceful_shutdown_contract!(chart, values)
   end
 end
 
+def assert_zammad_components!
+  documents = render("zammad", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=2"])
+  deployments = workloads(documents).to_h { |doc| [doc.dig("metadata", "name"), doc] }
+  scheduler = deployments.fetch("#{WORKLOAD_NAME}-scheduler") { raise "zammad does not render the scheduler" }
+  unless scheduler.dig("spec", "replicas") == 1
+    raise "zammad scheduler must run at most one replica, got #{scheduler.dig("spec", "replicas").inspect}"
+  end
+  unless scheduler.dig("spec", "strategy", "type") == "Recreate"
+    raise "zammad scheduler must be recreated so two background workers never run"
+  end
+  init = Array(scheduler.dig("spec", "template", "spec", "initContainers")).find { |c| c["name"] == "init" }
+  raise "zammad scheduler does not run the init container" if init.nil?
+
+  %w[railsserver websocket].each do |component|
+    replicas = deployments.fetch("#{WORKLOAD_NAME}-#{component}").dig("spec", "replicas")
+    raise "zammad #{component} does not follow replicaCount" unless replicas == 2
+  end
+
+  nginx_env = Array(deployments.fetch(WORKLOAD_NAME).dig("spec", "template", "spec", "containers", 0, "env"))
+    .to_h { |env| [env["name"], env["value"]] }
+  unless nginx_env["ZAMMAD_RAILSSERVER_HOST"] == "#{WORKLOAD_NAME}-railsserver" &&
+         nginx_env["ZAMMAD_WEBSOCKET_HOST"] == "#{WORKLOAD_NAME}-websocket"
+    raise "zammad NGINX does not point at the rendered Rails and WebSocket Services"
+  end
+  services = documents.select { |doc| doc["kind"] == "Service" }.map { |doc| doc.dig("metadata", "name") }
+  expected = [WORKLOAD_NAME, "#{WORKLOAD_NAME}-railsserver", "#{WORKLOAD_NAME}-websocket"]
+  raise "zammad renders Services #{services.inspect}, expected #{expected.inspect}" unless services.sort == expected.sort
+
+  paused = workloads(render("zammad", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=0"]))
+  unless paused.all? { |doc| doc.dig("spec", "replicas") == 0 }
+    raise "zammad does not scale every component to zero with replicaCount=0"
+  end
+end
+
 def assert_distribution_drain_timeout!
   default_env = Array(main_container("distribution")["env"])
   default_timeout = default_env.find { |env| env["name"] == "REGISTRY_HTTP_DRAINTIMEOUT" }
@@ -623,6 +657,7 @@ charts.each do |chart|
   assert_pgadmin_linked_database_login! if chart == "pgadmin"
   assert_graceful_shutdown_contract!(chart, values)
   assert_distribution_drain_timeout! if chart == "distribution"
+  assert_zammad_components! if chart == "zammad"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)
