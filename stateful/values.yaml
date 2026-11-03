@@ -51,7 +51,13 @@ service:
   clusterIP: ""
   loadBalancerIP: ""
   externalTrafficPolicy: ""
+  # Defaults to one port per containerPorts entry. Each port takes name, port, targetPort, protocol, nodePort and
+  # appProtocol; kubernetes.io/h2c makes gateways such as Envoy Gateway use cleartext HTTP/2 to reach it (gRPC).
   ports: []
+
+# More Services for the same pods, each named <fullname>-<name>, for example to give some ports a different
+# appProtocol or to route them separately. Each takes name, type, annotations and ports (as service.ports).
+extraServices: []
 
 headlessService:
   enabled: true

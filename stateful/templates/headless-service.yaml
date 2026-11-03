@@ -24,6 +24,9 @@ spec:
       port: {{ .port }}
       targetPort: {{ default .name .targetPort }}
       protocol: {{ default "TCP" .protocol }}
+      {{- with .appProtocol }}
+      appProtocol: {{ . }}
+      {{- end }}
     {{- end }}
     {{- else }}
     {{- range .Values.containerPorts }}
@@ -31,6 +34,9 @@ spec:
       port: {{ default .containerPort .servicePort }}
       targetPort: {{ .name }}
       protocol: {{ default "TCP" .protocol }}
+      {{- with .appProtocol }}
+      appProtocol: {{ . }}
+      {{- end }}
     {{- end }}
     {{- end }}
   selector:
