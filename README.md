@@ -43,7 +43,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | ruby            | wodby/ruby                                  | 0.2.2   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.2.0   |
 | solr            | wodby/solr                                  | 0.2.2   |
-| stateful        | configurable                                | 0.2.0   |
+| stateful        | configurable                                | 0.3.0   |
 | stateless       | configurable                                | 0.4.0   |
 | supabase        | Supabase component bundle                   | 0.2.0   |
 | tailscale       | tailscale/tailscale                         | 0.2.0   |
