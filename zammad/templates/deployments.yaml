@@ -1,0 +1,219 @@
+{{- $root := . }}
+{{- range $component := list "nginx" "railsserver" "websocket" "scheduler" }}
+{{- $c := get $root.Values.components $component }}
+{{- $name := include "zammad.componentName" (dict "root" $root "name" $component) }}
+{{- $env := include "zammad.env" (dict "root" $root "name" $component "component" $c) }}
+{{- $scheduler := eq $component "scheduler" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    {{- include "zammad.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    {{- with $root.Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+    {{- end }}
+  {{- with $root.Values.commonAnnotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- /* Zammad's background worker must not run twice, so it has at most one replica. */}}
+  replicas: {{ if $scheduler }}{{ min (int $root.Values.replicaCount) 1 }}{{ else }}{{ $root.Values.replicaCount }}{{ end }}
+  revisionHistoryLimit: {{ $root.Values.revisionHistoryLimit }}
+  minReadySeconds: {{ include "zammad.componentValue" (dict "root" $root "component" $c "key" "minReadySeconds") }}
+  progressDeadlineSeconds: {{ include "zammad.componentValue" (dict "root" $root "component" $c "key" "progressDeadlineSeconds") }}
+  {{- $strategy := $root.Values.strategy }}
+  {{- if $c.strategy }}{{- $strategy = $c.strategy }}{{- end }}
+  {{- with $strategy }}
+  strategy:
+    type: {{ .type }}
+    {{- if and (eq .type "RollingUpdate") .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml .rollingUpdate | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "zammad.selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $component }}
+  template:
+    metadata:
+      labels:
+        {{- include "zammad.labels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $component }}
+        {{- with $root.Values.commonLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $root.Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $c.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if $scheduler }}
+        checksum/init: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | sha256sum }}
+        {{- end }}
+        {{- with $root.Values.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $c.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (include "zammad.imagePullSecrets" $root) }}
+      {{- . | nindent 6 }}
+      {{- end }}
+      serviceAccountName: {{ include "zammad.serviceAccountName" $root }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with $root.Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ include "zammad.componentValue" (dict "root" $root "component" $c "key" "terminationGracePeriodSeconds") }}
+      {{- if and $scheduler $root.Values.init.enabled }}
+      initContainers:
+        - name: init
+          image: {{ include "zammad.image" $root }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          {{- with $root.Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/bash
+            - /opt/wodby/init.sh
+          env:
+            {{- $env | nindent 12 }}
+          {{- with $root.Values.init.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: init
+              mountPath: /opt/wodby
+              readOnly: true
+            {{- with $c.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 12 }}
+            {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: {{ include "zammad.image" $root }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          {{- with $root.Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - zammad-{{ $component }}
+          env:
+            {{- $env | nindent 12 }}
+          {{- if eq $component "nginx" }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          {{- /* NGINX starts listening only after the database is current, which can take minutes on a new install. */}}
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            httpGet:
+              path: /favicon.ico
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 20
+            failureThreshold: 6
+          {{- else if eq $component "railsserver" }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 20
+            failureThreshold: 6
+          {{- else if eq $component "websocket" }}
+          ports:
+            - name: websocket
+              containerPort: 6042
+              protocol: TCP
+          startupProbe:
+            tcpSocket:
+              port: websocket
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            tcpSocket:
+              port: websocket
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: websocket
+            periodSeconds: 20
+            failureThreshold: 6
+          {{- end }}
+          {{- with $c.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 12 }}
+          {{- end }}
+        {{- with $c.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      {{- if or (and $scheduler $root.Values.init.enabled) $c.extraVolumes }}
+      volumes:
+        {{- if and $scheduler $root.Values.init.enabled }}
+        - name: init
+          configMap:
+            name: {{ include "zammad.fullname" $root }}-init
+            defaultMode: 0555
+        {{- end }}
+        {{- with $c.extraVolumes }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+      {{- end }}
+{{- end }}
