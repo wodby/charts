@@ -7,7 +7,7 @@ Runs the [Zammad](https://zammad.org) helpdesk from the official `ghcr.io/zammad
 - `<fullname>-websocket`: the WebSocket server on port 6042.
 - `<fullname>-scheduler`: the background worker. Its init container runs Zammad's install or migration on every rollout, then applies the settings below. It runs at most one replica and is recreated.
 
-PostgreSQL, Redis and Memcached are external and configured through each component's `env`. Use the same variables for every component.
+PostgreSQL, Redis and Memcached are external and configured through `env`, which every component receives. A component's own `components.<name>.env` replaces entries of the same name.
 
 | Variable | Purpose |
 | --- | --- |

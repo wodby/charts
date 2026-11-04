@@ -50,7 +50,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | valkey          | wodby/valkey                                | 0.2.1   |
 | varnish         | wodby/vinyl                                 | 0.4.0   |
 | vinyl           | wodby/vinyl                                 | 0.2.3   |
-| zammad          | ghcr.io/zammad/zammad                       | 0.1.0   |
+| zammad          | ghcr.io/zammad/zammad                       | 0.2.0   |
 | zookeeper       | wodby/zookeeper                             | 0.2.2   |
 
 <!-- END GENERATED CHART CATALOG -->

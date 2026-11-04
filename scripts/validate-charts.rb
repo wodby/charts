@@ -403,6 +403,24 @@ def assert_zammad_components!
   expected = [WORKLOAD_NAME, "#{WORKLOAD_NAME}-railsserver", "#{WORKLOAD_NAME}-websocket"]
   raise "zammad renders Services #{services.inspect}, expected #{expected.inspect}" unless services.sort == expected.sort
 
+  shared = workloads(render("zammad", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "env[0].name=DATABASE_URL",
+    "env[0].value=shared",
+    "components.railsserver.env[0].name=DATABASE_URL",
+    "components.railsserver.env[0].value=own",
+  ]))
+  shared.each do |deployment|
+    pod = deployment.dig("spec", "template", "spec")
+    (Array(pod["initContainers"]) + Array(pod["containers"])).each do |container|
+      values = Array(container["env"]).select { |env| env["name"] == "DATABASE_URL" }.map { |env| env["value"] }
+      expected = container["name"] == "railsserver" ? ["own"] : ["shared"]
+      unless values == expected
+        raise "zammad #{container["name"]} renders DATABASE_URL=#{values.inspect}, expected #{expected.inspect}"
+      end
+    end
+  end
+
   paused = workloads(render("zammad", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=0"]))
   unless paused.all? { |doc| doc.dig("spec", "replicas") == 0 }
     raise "zammad does not scale every component to zero with replicaCount=0"

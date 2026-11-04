@@ -78,7 +78,13 @@ init:
     limits:
       memory: 2Gi
 
-# Per-component settings. env entries replace the chart defaults of the same name.
+# Environment of every component, such as the database, Redis and Memcached
+# settings. Wodby writes link, setting and integration variables only to the
+# primary container's env, so the service maps that container's env here.
+env: []
+
+# Per-component settings. env entries replace the chart defaults and the shared
+# env entries of the same name.
 components:
   nginx:
     env: []
