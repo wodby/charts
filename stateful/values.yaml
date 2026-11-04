@@ -96,6 +96,32 @@ updateStrategy:
 
 initContainers: []
 extraContainers: []
+# More containers in the pod, keyed by container name. Each takes the main container's keys, so every value has a
+# fixed path such as additionalContainers.<name>.image.tag, unlike the free-form extraContainers. A container is added
+# only when its image.repository is set. securityContext defaults to the main container's; image.pullPolicy defaults
+# to image.pullPolicy. The data volume can be mounted with extraVolumeMounts.
+#
+# additionalContainers:
+#   runner:
+#     image:
+#       registry: docker.io
+#       repository: example/runner
+#       tag: "1.0.0"
+#       digest: ""
+#       pullPolicy: ""
+#     command: []
+#     args: []
+#     envVars: []
+#     envFrom: []
+#     containerPorts: []
+#     securityContext: {}
+#     resources: {}
+#     startupProbe: {}
+#     livenessProbe: {}
+#     readinessProbe: {}
+#     lifecycle: {}
+#     extraVolumeMounts: []
+additionalContainers: {}
 
 extraVolumes: []
 extraVolumeMounts: []
