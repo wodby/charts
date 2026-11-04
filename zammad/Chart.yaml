@@ -2,12 +2,12 @@ apiVersion: v2
 name: zammad
 description: Zammad helpdesk web, WebSocket, background worker and NGINX components with external PostgreSQL, Redis and Memcached
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "7.2.2"
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Add a shared env list that every component receives, for settings such as the database, Redis and Memcached
+    - kind: fixed
+      description: Reach the Rails and WebSocket Services by fully qualified names, so NGINX resolves them on Kubernetes
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby
