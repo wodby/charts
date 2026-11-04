@@ -62,6 +62,10 @@ service:
   port: 8080
   annotations: {}
 
+# Kubernetes cluster domain. NGINX reaches the Rails and WebSocket Services by
+# their fully qualified names.
+clusterDomain: cluster.local
+
 nginx:
   # Scheme Zammad sees in X-Forwarded-Proto. Wodby routes terminate TLS.
   scheme: https

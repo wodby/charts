@@ -26,6 +26,11 @@
 {{- end -}}
 {{- end -}}
 
+{{/* Fully qualified name of a component's Service. Zammad's NGINX resolves its upstreams with its own resolver, which ignores search domains. */}}
+{{- define "zammad.serviceHost" -}}
+{{ include "zammad.componentName" . }}.{{ .root.Release.Namespace }}.svc.{{ .root.Values.clusterDomain }}
+{{- end -}}
+
 {{- define "zammad.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -67,9 +72,9 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
   (dict "name" "NGINX_PORT" "value" "8080")
   (dict "name" "NGINX_SERVER_SCHEME" "value" $root.Values.nginx.scheme)
   (dict "name" "NGINX_CLIENT_MAX_BODY_SIZE" "value" $root.Values.nginx.clientMaxBodySize)
-  (dict "name" "ZAMMAD_RAILSSERVER_HOST" "value" (include "zammad.componentName" (dict "root" $root "name" "railsserver")))
+  (dict "name" "ZAMMAD_RAILSSERVER_HOST" "value" (include "zammad.serviceHost" (dict "root" $root "name" "railsserver")))
   (dict "name" "ZAMMAD_RAILSSERVER_PORT" "value" "3000")
-  (dict "name" "ZAMMAD_WEBSOCKET_HOST" "value" (include "zammad.componentName" (dict "root" $root "name" "websocket")))
+  (dict "name" "ZAMMAD_WEBSOCKET_HOST" "value" (include "zammad.serviceHost" (dict "root" $root "name" "websocket")))
   (dict "name" "ZAMMAD_WEBSOCKET_PORT" "value" "6042")
 -}}
 {{- else if eq .name "railsserver" -}}

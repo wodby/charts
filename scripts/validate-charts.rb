@@ -395,8 +395,9 @@ def assert_zammad_components!
 
   nginx_env = Array(deployments.fetch(WORKLOAD_NAME).dig("spec", "template", "spec", "containers", 0, "env"))
     .to_h { |env| [env["name"], env["value"]] }
-  unless nginx_env["ZAMMAD_RAILSSERVER_HOST"] == "#{WORKLOAD_NAME}-railsserver" &&
-         nginx_env["ZAMMAD_WEBSOCKET_HOST"] == "#{WORKLOAD_NAME}-websocket"
+  # Zammad's NGINX resolver ignores search domains, so the hosts must be fully qualified.
+  unless nginx_env["ZAMMAD_RAILSSERVER_HOST"] == "#{WORKLOAD_NAME}-railsserver.default.svc.cluster.local" &&
+         nginx_env["ZAMMAD_WEBSOCKET_HOST"] == "#{WORKLOAD_NAME}-websocket.default.svc.cluster.local"
     raise "zammad NGINX does not point at the rendered Rails and WebSocket Services"
   end
   services = documents.select { |doc| doc["kind"] == "Service" }.map { |doc| doc.dig("metadata", "name") }
