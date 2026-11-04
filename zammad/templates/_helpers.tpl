@@ -101,7 +101,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 {{/* A component's deployment value, or the shared value when the component sets none. */}}
 {{- define "zammad.componentValue" -}}
-{{- $value := get .component .key -}}
-{{- if kindIs "invalid" $value -}}{{- $value = get .root.Values .key -}}{{- end -}}
+{{- /* Helm versions differ: an unset (null) value is either nil or removed from the map. */ -}}
+{{- $value := index .component .key -}}
+{{- if or (kindIs "invalid" $value) (eq (toString $value) "") -}}{{- $value = index .root.Values .key -}}{{- end -}}
 {{- $value -}}
 {{- end -}}
