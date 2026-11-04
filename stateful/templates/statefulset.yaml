@@ -118,6 +118,66 @@ spec:
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
             {{- end }}
           {{- end }}
+        {{- /* Named containers that take the main container's keys, so each value has a fixed path. */}}
+        {{- range $name, $container := .Values.additionalContainers }}
+        {{- if and $container $container.image $container.image.repository }}
+        - name: {{ $name }}
+          {{- with (default $.Values.securityContext $container.securityContext) }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "common.images.image" (dict "imageRoot" $container.image "global" $.Values.global "chart" $.Chart) }}
+          imagePullPolicy: {{ $container.image.pullPolicy | default $.Values.image.pullPolicy }}
+          {{- with $container.command }}
+          command:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.args }}
+          args:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.envVars }}
+          env:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.envFrom }}
+          envFrom:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.containerPorts }}
+          ports:
+            {{- range . }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
+          {{- end }}
+          {{- with $container.startupProbe }}
+          startupProbe:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.livenessProbe }}
+          livenessProbe:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.readinessProbe }}
+          readinessProbe:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.lifecycle }}
+          lifecycle:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with $container.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $container.extraVolumeMounts }}
+          volumeMounts:
+            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
         {{- with .Values.extraContainers }}
         {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
         {{- end }}
