@@ -82,11 +82,15 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- $env | toYaml -}}
 {{- end -}}
 
-{{/* Component environment: entries in components.<name>.env replace defaults of the same name. Never renders duplicates. */}}
+{{/* Component environment: the chart defaults, then the shared env, then components.<name>.env; a later entry replaces an earlier one of the same name. Never renders duplicates. */}}
 {{- define "zammad.env" -}}
 {{- $items := dict -}}
 {{- $order := list -}}
 {{- range (include "zammad.defaultEnv" . | fromYamlArray) -}}
+{{- if not (hasKey $items .name) }}{{ $order = append $order .name }}{{ end -}}
+{{- $_ := set $items .name . -}}
+{{- end -}}
+{{- range .root.Values.env -}}
 {{- if not (hasKey $items .name) }}{{ $order = append $order .name }}{{ end -}}
 {{- $_ := set $items .name . -}}
 {{- end -}}
