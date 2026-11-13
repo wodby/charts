@@ -2,7 +2,7 @@ apiVersion: v2
 name: phpmyadmin
 description: phpMyAdmin chart for the official phpMyAdmin image.
 type: application
-version: 0.2.1
+version: 0.2.2
 appVersion: "5"
 keywords:
   - phpmyadmin
@@ -15,5 +15,5 @@ dependencies:
     version: 1.x.x
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Drain service endpoints before phpMyAdmin receives its graceful stop signal
+    - kind: fixed
+      description: Run liveness and readiness probes against a static file so they no longer create a phpMyAdmin session on every check

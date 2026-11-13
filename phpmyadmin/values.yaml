@@ -61,6 +61,10 @@ envFrom: []
 command: []
 args: []
 
+# The startup probe requests the PHP front page once per start to confirm phpMyAdmin
+# renders. Liveness and readiness repeat for the pod's lifetime, so they request a
+# static file instead: each request to a PHP page without a cookie creates a new
+# session file, and their constant churn grows kernel file caches charged to the pod.
 startupProbe:
   httpGet:
     path: /
@@ -71,7 +75,7 @@ startupProbe:
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /robots.txt
     port: http
   initialDelaySeconds: 10
   timeoutSeconds: 3
@@ -80,7 +84,7 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /
+    path: /robots.txt
     port: http
   timeoutSeconds: 3
   periodSeconds: 5
