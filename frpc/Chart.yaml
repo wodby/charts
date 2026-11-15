@@ -2,12 +2,10 @@ name: frpc
 apiVersion: v2
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: Optional web terminal route with its own credentials, served by a proxy that holds no Kubernetes credentials
-    - kind: changed
-      description: Update the default image to wodby/frp:0.69-r1
+    - kind: security
+      description: Update the default image to wodby/frp:0.72-r2 with FRP 0.72.0, the official kubectl and current Alpine packages, which clears most reported vulnerabilities
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
     version: 1.x.x
-version: 0.4.0
+version: 0.4.1
