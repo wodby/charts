@@ -2,9 +2,9 @@ apiVersion: v2
 name: supabase
 description: Self-hosted Supabase APIs and Studio with an external Supabase PostgreSQL database
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: self-hosted/v0.8.1
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: Use the public URL as the Auth site URL when no site URL is set
+      description: Lower default resource requests to measured idle usage

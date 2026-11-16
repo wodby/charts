@@ -76,8 +76,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 32Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -99,8 +99,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 16Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -122,8 +122,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 16Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -145,8 +145,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 208Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -168,8 +168,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 128Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -193,8 +193,8 @@ components:
       env: []
       resources:
         requests:
-          cpu: 100m
-          memory: 128Mi
+          cpu: 10m
+          memory: 16Mi
       extraVolumeMounts: []
   meta:
     image:
@@ -203,8 +203,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 112Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
@@ -226,8 +226,8 @@ components:
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 10m
+        memory: 224Mi
     env: []
     extraVolumeMounts: []
     extraVolumes: []
