@@ -1,0 +1,35 @@
+{
+	auto_https off
+	admin off
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+	}
+}
+
+:{$PROXY_PORT:8080} {
+	request_body {
+		max_size {$FILE_SIZE_LIMIT:5242880}
+	}
+
+	handle /-/health {
+		respond "OK" 200
+	}
+
+	redir /spaces /spaces/ permanent
+	reverse_proxy /spaces/* {$PLANE_SPACE_UPSTREAM}
+
+	redir /god-mode /god-mode/ permanent
+	reverse_proxy /god-mode/* {$PLANE_ADMIN_UPSTREAM}
+
+	reverse_proxy /live/* {$PLANE_LIVE_UPSTREAM}
+	reverse_proxy /api/* {$PLANE_API_UPSTREAM}
+	reverse_proxy /auth/* {$PLANE_API_UPSTREAM}
+	reverse_proxy /static/* {$PLANE_API_UPSTREAM}
+
+	# Uploads and downloads go to the object storage with the browser's Host header, which the presigned URLs are signed for.
+	reverse_proxy /{$AWS_S3_BUCKET_NAME}/* {$PLANE_S3_UPSTREAM}
+	reverse_proxy /{$AWS_S3_BUCKET_NAME} {$PLANE_S3_UPSTREAM}
+
+	reverse_proxy /* {$PLANE_WEB_UPSTREAM}
+}

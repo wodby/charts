@@ -6,6 +6,7 @@ BEGIN_MARKER = "<!-- BEGIN GENERATED CHART CATALOG -->"
 END_MARKER = "<!-- END GENERATED CHART CATALOG -->"
 IMAGE_OVERRIDES = {
   "common" => "",
+  "plane" => "Plane component images",
   "stateful" => "configurable",
   "stateless" => "configurable",
   "supabase" => "Supabase component bundle",
