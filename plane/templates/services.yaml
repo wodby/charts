@@ -1,0 +1,30 @@
+{{- $root := . }}
+{{- $ports := dict "proxy" (int .Values.service.port) "web" 3000 "admin" 3000 "space" 3000 "live" 3000 "api" 8000 }}
+{{- range $component := list "proxy" "web" "admin" "space" "live" "api" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "plane.componentName" (dict "root" $root "name" $component) }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    {{- include "plane.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    {{- with $root.Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+    {{- end }}
+  {{- if and (eq $component "proxy") $root.Values.service.annotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" $root.Values.service.annotations "context" $root) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ if eq $component "proxy" }}{{ $root.Values.service.type }}{{ else }}ClusterIP{{ end }}
+  ports:
+    - name: http
+      port: {{ get $ports $component }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "plane.selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+{{- end }}

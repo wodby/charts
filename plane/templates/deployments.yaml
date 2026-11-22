@@ -1,0 +1,207 @@
+{{- $root := . }}
+{{- $commands := dict
+  "proxy" (list "caddy" "run" "--config" "/opt/wodby/Caddyfile" "--adapter" "caddyfile")
+  "api" (list "./bin/docker-entrypoint-api.sh")
+  "worker" (list "/bin/bash" "-c" "python manage.py wait_for_db && python manage.py wait_for_migrations && exec celery -A plane worker -l info --concurrency \"${PLANE_WORKER_CONCURRENCY:-2}\"")
+  "scheduler" (list "./bin/docker-entrypoint-beat.sh")
+}}
+{{- $ports := dict "proxy" 8080 "web" 3000 "admin" 3000 "space" 3000 "live" 3000 "api" 8000 }}
+{{- /* Paths that answer without the database. Space renders through the API, so it is checked by port. */}}
+{{- $paths := dict "proxy" "/-/health" "web" "/" "admin" "/god-mode/" "live" "/live/health" "api" "/" }}
+{{- range $component := list "proxy" "web" "admin" "space" "live" "api" "worker" "scheduler" }}
+{{- $c := get $root.Values.components $component }}
+{{- $name := include "plane.componentName" (dict "root" $root "name" $component) }}
+{{- $env := include "plane.env" (dict "root" $root "name" $component "component" $c) }}
+{{- $scheduler := eq $component "scheduler" }}
+{{- $proxy := eq $component "proxy" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    {{- include "plane.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+    {{- with $root.Values.commonLabels }}
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+    {{- end }}
+  {{- with $root.Values.commonAnnotations }}
+  annotations:
+    {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- /* Celery beat must not run twice, so the scheduler has at most one replica. */}}
+  replicas: {{ if $scheduler }}{{ min (int $root.Values.replicaCount) 1 }}{{ else }}{{ $root.Values.replicaCount }}{{ end }}
+  revisionHistoryLimit: {{ $root.Values.revisionHistoryLimit }}
+  minReadySeconds: {{ include "plane.componentValue" (dict "root" $root "component" $c "key" "minReadySeconds") }}
+  progressDeadlineSeconds: {{ include "plane.componentValue" (dict "root" $root "component" $c "key" "progressDeadlineSeconds") }}
+  {{- $strategy := $root.Values.strategy }}
+  {{- if $c.strategy }}{{- $strategy = $c.strategy }}{{- end }}
+  {{- with $strategy }}
+  strategy:
+    type: {{ .type }}
+    {{- if and (eq .type "RollingUpdate") .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml .rollingUpdate | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "plane.selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $component }}
+  template:
+    metadata:
+      labels:
+        {{- include "plane.labels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $component }}
+        {{- with $root.Values.commonLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $root.Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $c.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if or $scheduler $proxy }}
+        checksum/files: {{ include (print $root.Template.BasePath "/configmap.yaml") $root | sha256sum }}
+        {{- end }}
+        {{- with $root.Values.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+        {{- with $c.podAnnotations }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (include "plane.imagePullSecrets" $root) }}
+      {{- . | nindent 6 }}
+      {{- end }}
+      serviceAccountName: {{ include "plane.serviceAccountName" $root }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with $root.Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ include "plane.componentValue" (dict "root" $root "component" $c "key" "terminationGracePeriodSeconds") }}
+      {{- if and $scheduler $root.Values.init.enabled }}
+      initContainers:
+        - name: init
+          image: {{ include "plane.image" (dict "root" $root "component" $c) }}
+          imagePullPolicy: {{ include "plane.imagePullPolicy" (dict "root" $root "component" $c) }}
+          {{- with $root.Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/bash
+            - /opt/wodby/init.sh
+          env:
+            {{- $env | nindent 12 }}
+          {{- with $root.Values.init.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: files
+              mountPath: /opt/wodby
+              readOnly: true
+            {{- with $c.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 12 }}
+            {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ $component }}
+          image: {{ include "plane.image" (dict "root" $root "component" $c) }}
+          imagePullPolicy: {{ include "plane.imagePullPolicy" (dict "root" $root "component" $c) }}
+          {{- with $root.Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with (get $commands $component) }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $env }}
+          env:
+            {{- . | nindent 12 }}
+          {{- end }}
+          {{- if hasKey $ports $component }}
+          ports:
+            - name: http
+              containerPort: {{ get $ports $component }}
+              protocol: TCP
+          {{- /* The API starts serving only after the migrations, which can take minutes on a new install. */}}
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            failureThreshold: 90
+          {{- if hasKey $paths $component }}
+          readinessProbe:
+            httpGet:
+              path: {{ get $paths $component }}
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          {{- else }}
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 20
+            failureThreshold: 6
+          {{- end }}
+          {{- with $c.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if or $proxy $c.extraVolumeMounts }}
+          volumeMounts:
+            {{- if $proxy }}
+            - name: files
+              mountPath: /opt/wodby
+              readOnly: true
+            {{- end }}
+            {{- with $c.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- with $c.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      {{- if or (and $scheduler $root.Values.init.enabled) $proxy $c.extraVolumes }}
+      volumes:
+        {{- if or (and $scheduler $root.Values.init.enabled) $proxy }}
+        - name: files
+          configMap:
+            name: {{ include "plane.fullname" $root }}-files
+            defaultMode: 0555
+        {{- end }}
+        {{- with $c.extraVolumes }}
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- include "common.tplvalues.render" (dict "value" . "context" $root) | nindent 8 }}
+      {{- end }}
+{{- end }}

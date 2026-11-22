@@ -375,6 +375,79 @@ def assert_graceful_shutdown_contract!(chart, values)
   end
 end
 
+def assert_plane_components!
+  documents = render("plane", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=2"])
+  deployments = workloads(documents).to_h { |doc| [doc.dig("metadata", "name"), doc] }
+  scheduler = deployments.fetch("#{WORKLOAD_NAME}-scheduler") { raise "plane does not render the scheduler" }
+  unless scheduler.dig("spec", "replicas") == 1
+    raise "plane scheduler must run at most one replica, got #{scheduler.dig("spec", "replicas").inspect}"
+  end
+  unless scheduler.dig("spec", "strategy", "type") == "Recreate"
+    raise "plane scheduler must be recreated so two Celery beat processes never run"
+  end
+  init = Array(scheduler.dig("spec", "template", "spec", "initContainers")).find { |c| c["name"] == "init" }
+  raise "plane scheduler does not run the init container" if init.nil?
+
+  %w[web admin space live api worker].each do |component|
+    replicas = deployments.fetch("#{WORKLOAD_NAME}-#{component}").dig("spec", "replicas")
+    raise "plane #{component} does not follow replicaCount" unless replicas == 2
+  end
+
+  images = deployments.transform_values { |doc| doc.dig("spec", "template", "spec", "containers", 0, "image") }
+  {
+    WORKLOAD_NAME => "plane-proxy",
+    "#{WORKLOAD_NAME}-web" => "plane-frontend",
+    "#{WORKLOAD_NAME}-admin" => "plane-admin",
+    "#{WORKLOAD_NAME}-space" => "plane-space",
+    "#{WORKLOAD_NAME}-live" => "plane-live",
+    "#{WORKLOAD_NAME}-api" => "plane-backend",
+  }.each do |name, repository|
+    unless images[name].to_s.include?("makeplane/#{repository}:")
+      raise "plane #{name} runs #{images[name].inspect}, expected makeplane/#{repository}"
+    end
+  end
+
+  proxy_env = Array(deployments.fetch(WORKLOAD_NAME).dig("spec", "template", "spec", "containers", 0, "env"))
+    .to_h { |env| [env["name"], env["value"]] }
+  {
+    "PLANE_WEB_UPSTREAM" => "web:3000",
+    "PLANE_ADMIN_UPSTREAM" => "admin:3000",
+    "PLANE_SPACE_UPSTREAM" => "space:3000",
+    "PLANE_LIVE_UPSTREAM" => "live:3000",
+    "PLANE_API_UPSTREAM" => "api:8000",
+  }.each do |key, target|
+    component, port = target.split(":")
+    expected = "#{WORKLOAD_NAME}-#{component}.default.svc.cluster.local:#{port}"
+    raise "plane proxy #{key}=#{proxy_env[key].inspect}, expected #{expected}" unless proxy_env[key] == expected
+  end
+  services = documents.select { |doc| doc["kind"] == "Service" }.map { |doc| doc.dig("metadata", "name") }
+  expected = [WORKLOAD_NAME] + %w[web admin space live api].map { |c| "#{WORKLOAD_NAME}-#{c}" }
+  raise "plane renders Services #{services.inspect}, expected #{expected.inspect}" unless services.sort == expected.sort
+
+  shared = workloads(render("plane", [
+    "fullnameOverride=#{WORKLOAD_NAME}",
+    "env[0].name=DATABASE_URL",
+    "env[0].value=shared",
+    "components.api.env[0].name=DATABASE_URL",
+    "components.api.env[0].value=own",
+  ]))
+  shared.each do |deployment|
+    pod = deployment.dig("spec", "template", "spec")
+    (Array(pod["initContainers"]) + Array(pod["containers"])).each do |container|
+      values = Array(container["env"]).select { |env| env["name"] == "DATABASE_URL" }.map { |env| env["value"] }
+      expected = container["name"] == "api" ? ["own"] : ["shared"]
+      unless values == expected
+        raise "plane #{container["name"]} renders DATABASE_URL=#{values.inspect}, expected #{expected.inspect}"
+      end
+    end
+  end
+
+  paused = workloads(render("plane", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=0"]))
+  unless paused.all? { |doc| doc.dig("spec", "replicas") == 0 }
+    raise "plane does not scale every component to zero with replicaCount=0"
+  end
+end
+
 def assert_zammad_components!
   documents = render("zammad", ["fullnameOverride=#{WORKLOAD_NAME}", "replicaCount=2"])
   deployments = workloads(documents).to_h { |doc| [doc.dig("metadata", "name"), doc] }
@@ -677,6 +750,7 @@ charts.each do |chart|
   assert_graceful_shutdown_contract!(chart, values)
   assert_distribution_drain_timeout! if chart == "distribution"
   assert_zammad_components! if chart == "zammad"
+  assert_plane_components! if chart == "plane"
   assert_deployment_defaults!(chart, primary)
   assert_deployment_overrides!(chart, primary)
   assert_secondary_workload_overrides!(chart)

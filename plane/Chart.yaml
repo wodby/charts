@@ -1,0 +1,14 @@
+apiVersion: v2
+name: plane
+description: Plane project management web, admin, space, live, API, worker and scheduler components with a Caddy proxy and external PostgreSQL, Redis, RabbitMQ and S3-compatible storage
+type: application
+version: 0.1.0
+appVersion: "v1.5.0"
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Plane Community Edition with every component behind one proxy, external datastores and installation with a preset administrator
+dependencies:
+- name: common
+  repository: oci://registry-1.docker.io/wodby
+  version: 1.x.x

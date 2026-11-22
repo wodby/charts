@@ -1,0 +1,246 @@
+# Replicas of the proxy, web, admin, space, live, API and worker components. The
+# background scheduler always runs one replica, or none when this is 0.
+replicaCount: 1
+revisionHistoryLimit: 10
+
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# The Plane release every component runs. Each component's image has its own
+# repository under components.<name>.image; its registry and tag default to
+# these.
+image:
+  registry: docker.io
+  tag: "v1.5.0"
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+commonLabels: {}
+commonAnnotations: {}
+podLabels: {}
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automount: false
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+
+# Deployment policy shared by the components. Each component can override it
+# with its own strategy, minReadySeconds, progressDeadlineSeconds and
+# terminationGracePeriodSeconds.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+minReadySeconds: 10
+progressDeadlineSeconds: 900
+terminationGracePeriodSeconds: 30
+
+# The proxy's Service: the only address the app is reached at.
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+# Kubernetes cluster domain. The proxy and the live server reach the other
+# components' Services by their fully qualified names.
+clusterDomain: cluster.local
+
+init:
+  # Runs Plane's database migrations and sets up the instance administrator
+  # before the background scheduler starts. The other components wait until
+  # the migrations are applied.
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+# Environment of every component, such as the database, Redis, RabbitMQ and
+# storage settings. Wodby writes link, setting and integration variables only
+# to the primary container's env, so the service maps that container's env
+# here.
+env: []
+
+# Per-component settings. env entries replace the chart defaults and the shared
+# env entries of the same name.
+components:
+  # Caddy: routes /api, /auth, /static, /god-mode, /spaces, /live and the
+  # storage bucket to their components and everything else to the web app.
+  proxy:
+    image:
+      repository: makeplane/plane-proxy
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 256Mi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  web:
+    image:
+      repository: makeplane/plane-frontend
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 256Mi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  admin:
+    image:
+      repository: makeplane/plane-admin
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 256Mi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  space:
+    image:
+      repository: makeplane/plane-space
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  live:
+    image:
+      repository: makeplane/plane-live
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
+      limits:
+        memory: 1Gi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  api:
+    image:
+      repository: makeplane/plane-backend
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 256Mi
+      limits:
+        memory: 2Gi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  # Celery workers. Each replica runs PLANE_WORKER_CONCURRENCY processes
+  # (default 2), not one per CPU of the node.
+  worker:
+    image:
+      repository: makeplane/plane-backend
+    env: []
+    strategy: {}
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 256Mi
+      limits:
+        memory: 2Gi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+  scheduler:
+    image:
+      repository: makeplane/plane-backend
+    env: []
+    # Recreated, so two schedulers never run at once.
+    strategy:
+      type: Recreate
+    minReadySeconds: null
+    progressDeadlineSeconds: null
+    terminationGracePeriodSeconds: null
+    resources:
+      requests:
+        cpu: 10m
+        memory: 160Mi
+      limits:
+        memory: 512Mi
+    podLabels: {}
+    podAnnotations: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    sidecars: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []

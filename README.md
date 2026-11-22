@@ -35,6 +35,7 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | pgadmin         | dpage/pgadmin4                              | 0.3.6   |
 | php-fpm         | wodby/php                                   | 0.3.3   |
 | phpmyadmin      | phpmyadmin                                  | 0.2.2   |
+| plane           | Plane component images                      | 0.1.0   |
 | postgres        | wodby/postgres                              | 0.3.2   |
 | prometheus      | wodby/prometheus                            | 0.2.2   |
 | python          | wodby/python                                | 0.2.2   |
