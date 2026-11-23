@@ -1,10 +1,10 @@
 apiVersion: v2
 name: gotenberg
-version: 0.2.3
+version: 0.3.0
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Stop Kubernetes service link variables, such as API_PORT from a Service named api, from overriding Gotenberg settings
+    - kind: added
+      description: Check Gotenberg's /health endpoint with liveness and readiness probes, so Kubernetes restarts a Gotenberg that stops responding and stops routing to it until it is healthy
 dependencies:
   - name: common
     repository: oci://registry-1.docker.io/wodby
