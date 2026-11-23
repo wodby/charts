@@ -19,17 +19,17 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | distribution    | registry                                    | 0.2.2   |
 | frpc            | wodby/frp                                   | 0.4.1   |
 | frps            | wodby/frp                                   | 0.2.1   |
-| go              | wodby/go                                    | 0.2.2   |
+| go              | wodby/go                                    | 0.3.0   |
 | gotenberg       | gotenberg/gotenberg                         | 0.3.0   |
 | httpd           | wodby/apache                                | 0.3.3   |
-| java            | wodby/java                                  | 0.1.0   |
+| java            | wodby/java                                  | 0.2.0   |
 | mailpit         | axllent/mailpit                             | 0.3.0   |
 | mariadb         | wodby/mariadb                               | 0.4.0   |
 | memcached       | wodby/memcached                             | 0.2.1   |
 | mtproxy         | telegrammessenger/proxy                     | 0.2.1   |
 | nfs-provisioner | registry.k8s.io/sig-storage/nfs-provisioner | 0.4.1   |
 | nginx           | wodby/nginx                                 | 0.4.0   |
-| node            | wodby/node                                  | 0.3.2   |
+| node            | wodby/node                                  | 0.4.0   |
 | openclaw        | wodby/openclaw                              | 0.2.1   |
 | opensmtpd       | wodby/opensmtpd                             | 0.4.1   |
 | pgadmin         | dpage/pgadmin4                              | 0.3.6   |
@@ -38,14 +38,14 @@ The catalog below is generated from each chart's `Chart.yaml` and `values.yaml`.
 | plane           | Plane component images                      | 0.1.0   |
 | postgres        | wodby/postgres                              | 0.3.2   |
 | prometheus      | wodby/prometheus                            | 0.2.2   |
-| python          | wodby/python                                | 0.2.2   |
+| python          | wodby/python                                | 0.3.0   |
 | rabbitmq        | wodby/rabbitmq                              | 0.3.2   |
 | redis           | wodby/redis                                 | 0.2.1   |
-| ruby            | wodby/ruby                                  | 0.2.2   |
+| ruby            | wodby/ruby                                  | 0.3.0   |
 | rustdesk        | rustdesk/rustdesk-server                    | 0.2.0   |
 | solr            | wodby/solr                                  | 0.2.2   |
 | stateful        | configurable                                | 0.4.0   |
-| stateless       | configurable                                | 0.4.0   |
+| stateless       | configurable                                | 0.5.0   |
 | supabase        | Supabase component bundle                   | 0.2.1   |
 | tailscale       | tailscale/tailscale                         | 0.2.0   |
 | valkey          | wodby/valkey                                | 0.2.1   |

@@ -15,11 +15,11 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.2
+version: 0.3.0
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Pin the default image to wodby/go:1.27-r0
+    - kind: added
+      description: Wait 5 seconds before stopping a pod so the gateway stops sending it new requests first (requires Kubernetes 1.30 or later)
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/wodby

@@ -103,6 +103,16 @@ affinity: {}
 
 terminationGracePeriodSeconds: 30
 
+# Custom lifecycle hooks replace the built-in graceful shutdown delay.
+lifecycleHooks: {}
+
+# Keep a stopping pod serving for a few seconds while Kubernetes and the gateway stop sending it new requests.
+# The delay uses the Kubernetes sleep hook, so the image needs no shell. It counts toward
+# terminationGracePeriodSeconds.
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
+
 # Deployment availability and progress timing.
 minReadySeconds: 10
 progressDeadlineSeconds: 900
