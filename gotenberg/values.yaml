@@ -65,6 +65,10 @@ resources: {}
 #   memory: 128Mi
 
 envVars: []
+# Kubernetes adds <SERVICE>_PORT and similar variables for every Service in the
+# namespace. Gotenberg reads environment variables as flags, so a Service named
+# `api` would set API_PORT=tcp://... and stop Gotenberg from starting.
+enableServiceLinks: false
 command: []
 args: []
 
