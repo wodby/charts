@@ -64,6 +64,27 @@ resources: {}
   #   cpu: 100m
 #   memory: 128Mi
 
+# Gotenberg's /health answers 503 while Chromium or LibreOffice is down. The
+# API can take up to 30 seconds (--api-start-timeout) to start. Set a probe to
+# null to turn it off; a custom --api-root-path also moves /health.
+livenessProbe:
+  httpGet:
+    path: /health
+    port: gotenberg
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  periodSeconds: 10
+  failureThreshold: 6
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: gotenberg
+  initialDelaySeconds: 5
+  timeoutSeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
+
 envVars: []
 # Kubernetes adds <SERVICE>_PORT and similar variables for every Service in the
 # namespace. Gotenberg reads environment variables as flags, so a Service named
