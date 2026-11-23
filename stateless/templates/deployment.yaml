@@ -105,9 +105,14 @@ spec:
           readinessProbe:
             {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
           {{- end }}
-          {{- with .Values.lifecycle }}
+          {{- if .Values.lifecycle }}
           lifecycle:
-            {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.lifecycle "context" $) | nindent 12 }}
+          {{- else if and .Values.gracefulShutdown.enabled (gt (int .Values.gracefulShutdown.preStopDelaySeconds) 0) }}
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: {{ int .Values.gracefulShutdown.preStopDelaySeconds }}
           {{- end }}
           {{- with .Values.resources }}
           resources:

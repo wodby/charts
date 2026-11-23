@@ -62,7 +62,15 @@ args: []
 startupProbe: {}
 livenessProbe: {}
 readinessProbe: {}
+# Custom lifecycle hooks replace the built-in graceful shutdown delay.
 lifecycle: {}
+
+# Keep a stopping pod serving for a few seconds while Kubernetes and the gateway stop sending it new requests.
+# The delay uses the Kubernetes sleep hook, so the image needs no shell. It counts toward
+# terminationGracePeriodSeconds.
+gracefulShutdown:
+  enabled: true
+  preStopDelaySeconds: 5
 
 strategy:
   type: RollingUpdate

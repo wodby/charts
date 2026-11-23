@@ -2,11 +2,11 @@ apiVersion: v2
 name: stateless
 description: Boilerplate chart for stateless services
 type: application
-version: 0.4.0
+version: 0.5.0
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Add persistence values to mount an existing volume claim, or an emptyDir in its place, at one path
+      description: Wait 5 seconds before stopping a pod so the gateway stops sending it new requests first (requires Kubernetes 1.30 or later)
 appVersion: "1.0.0"
 dependencies:
   - name: common
